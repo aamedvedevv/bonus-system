@@ -7,7 +7,7 @@ import (
 // Create добавляет пользователя в базу данных.
 func (s *Storage) Create(user entities.User) error {
 	result, err := s.db.Exec("INSERT INTO users (login, password, registered_at) values ($1, $2, $3) on conflict (login) do nothing",
-		user.Loggin, user.Password, user.RegisteredAt)
+		user.Login, user.Password, user.RegisteredAt)
 	if err != nil {
 		return err
 	}

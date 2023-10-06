@@ -36,7 +36,7 @@ func (u *Users) SignUp(usr entities.SighUpInput) error {
 	}
 
 	user := entities.User{
-		Loggin:       usr.Login,
+		Login:        usr.Login,
 		Password:     password,
 		RegisteredAt: time.Now(),
 	}

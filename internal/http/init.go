@@ -29,6 +29,7 @@ func NewAPIServer(config *config.Config) *APIServer {
 }
 
 func (s *APIServer) Start() error {
+	s.config.ParseFlags()
 	s.configureRouter()
 
 	if err := s.configureLogger(); err != nil {
@@ -66,7 +67,7 @@ func (s *APIServer) configureLogger() error {
 }
 
 func (s *APIServer) configureStore() (*repository.Storage, error) {
-	db, err := repository.NewStorage("host=127.0.0.1 port=5432 user=postgres sslmode=disable password=1234")
+	db, err := repository.NewStorage(s.config.DBPort)
 	if err != nil {
 		return nil, err
 	}

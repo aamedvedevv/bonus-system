@@ -10,7 +10,7 @@ var validate *validator.Validate
 
 type User struct {
 	ID           int       `json:"id"`
-	Loggin       string    `json:"loggin"`
+	Login        string    `json:"loggin"`
 	Password     string    `json:"password"`
 	RegisteredAt time.Time `json:"registered_at"`
 }
