@@ -1,8 +1,10 @@
 package service
 
 import (
+	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"strconv"
 	"time"
 
@@ -24,7 +26,7 @@ type Users struct {
 	hasher PasswordHasher
 
 	hmacSecret []byte
-	tokenTtl   time.Duration
+	tokenTTL   time.Duration
 }
 
 func NewUsers(repo UserRepository, hasher PasswordHasher, secret []byte, ttl time.Duration) *Users {
@@ -32,7 +34,7 @@ func NewUsers(repo UserRepository, hasher PasswordHasher, secret []byte, ttl tim
 		repo:       repo,
 		hasher:     hasher,
 		hmacSecret: secret,
-		tokenTtl:   ttl,
+		tokenTTL:   ttl,
 	}
 }
 
@@ -70,8 +72,42 @@ func (u *Users) SignIn(usr domain.SighUpAndInInput) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.RegisteredClaims{
 		Subject:   strconv.Itoa(user.ID),
 		IssuedAt:  jwt.NewNumericDate(time.Now()),
-		ExpiresAt: jwt.NewNumericDate(time.Now().Add(u.tokenTtl)),
+		ExpiresAt: jwt.NewNumericDate(time.Now().Add(u.tokenTTL)),
 	})
 
 	return token.SignedString(u.hmacSecret)
+}
+
+// ParseToken достает из token значение userID.
+func (u *Users) ParseToken(ctx context.Context, token string) (int64, error) {
+	t, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+
+		return u.hmacSecret, nil
+	})
+	if err != nil {
+		return 0, err
+	}
+
+	if !t.Valid {
+		return 0, errors.New("invalid token")
+	}
+
+	claims, ok := t.Claims.(jwt.MapClaims)
+	if !ok {
+		return 0, errors.New("invalid claims")
+	}
+
+	subject, ok := claims["sub"].(string)
+	if !ok {
+		return 0, errors.New("invalid subject")
+	}
+
+	id, err := strconv.Atoi(subject)
+	if err != nil {
+		return 0, errors.New("invalid subject")
+	}
+	return int64(id), nil
 }

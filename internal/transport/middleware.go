@@ -1,6 +1,7 @@
-package logger
+package transport
 
 import (
+	"context"
 	"net/http"
 	"time"
 
@@ -36,14 +37,14 @@ func logFields(handler string) log.Fields {
 	}
 }
 
-func LogError(handler string, err error) {
+func logError(handler string, err error) {
 	log.WithFields(logFields(handler)).Error(err)
 }
 
-// WithLogging выполняет функцию middleware с логированием.
+// withLogging выполняет функцию middleware с логированием.
 // Содержит сведения о URI, методе запроса и времени, затраченного на его выполнение.
 // Сведения об ответах должны содержать код статуса и размер содержимого ответа.
-func WithLogging(next http.Handler) http.Handler {
+func withLogging(next http.Handler) http.Handler {
 	logFn := func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 
@@ -69,4 +70,37 @@ func WithLogging(next http.Handler) http.Handler {
 		}).Info("request details: ")
 	}
 	return http.HandlerFunc(logFn)
+}
+
+// authMiddleware выполняет функцию middleware авторизации.
+// Получает токен из запроса и передает в контекст userID который совершает данный запрос.
+func (s *APIServer) authMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		token, err := getTokenFromRequest(r)
+		if err != nil {
+			logError("authMiddleware", err)
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+		userID, err := s.users.ParseToken(r.Context(), token)
+		if err != nil {
+			logError("authMiddleware", err)
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+
+		ctx := context.WithValue(r.Context(), "userID", userID)
+		r = r.WithContext(ctx)
+		next.ServeHTTP(w, r)
+	})
+}
+
+// getTokenFromRequest получает token из cookie.
+func getTokenFromRequest(r *http.Request) (string, error) {
+	token, err := r.Cookie("token")
+	if err != nil {
+		return "", err
+
+	}
+	return token.Value, nil
 }

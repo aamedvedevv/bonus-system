@@ -5,7 +5,6 @@ import (
 
 	"github.com/AlexCorn999/bonus-system/internal/config"
 	"github.com/AlexCorn999/bonus-system/internal/hash"
-	"github.com/AlexCorn999/bonus-system/internal/logger"
 	"github.com/AlexCorn999/bonus-system/internal/repository"
 	"github.com/AlexCorn999/bonus-system/internal/service"
 	"github.com/go-chi/chi/v5"
@@ -18,6 +17,7 @@ type APIServer struct {
 	logger  *log.Logger
 	storage *repository.Storage
 	users   *service.Users
+	orders  *service.Orders
 }
 
 func NewAPIServer(config *config.Config) *APIServer {
@@ -45,6 +45,7 @@ func (s *APIServer) Start() error {
 
 	hasher := hash.NewSHA1Hasher("salt")
 	s.users = service.NewUsers(db, hasher, []byte("sample secret"), s.config.TokenTTL)
+	s.orders = service.NewOrders(db)
 
 	s.logger.Info("starting api server")
 
@@ -52,9 +53,10 @@ func (s *APIServer) Start() error {
 }
 
 func (s *APIServer) configureRouter() {
-	s.router.Use(logger.WithLogging)
+	s.router.Use(withLogging)
 	s.router.Post("/api/user/register", s.SighUp)
 	s.router.Post("/api/user/login", s.SighIn)
+	s.router.With(s.authMiddleware).Post("/api/user/orders", s.OrderUploading)
 }
 
 func (s *APIServer) configureLogger() error {

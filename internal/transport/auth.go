@@ -1,33 +1,34 @@
 package transport
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"io"
 	"net/http"
 
 	"github.com/AlexCorn999/bonus-system/internal/domain"
-	"github.com/AlexCorn999/bonus-system/internal/logger"
 	"github.com/AlexCorn999/bonus-system/internal/repository"
 )
 
+// SighUp отвечает за регистрацию пользователя по логину и паролю. Автоматически производит аутентификацию.
 func (s *APIServer) SighUp(w http.ResponseWriter, r *http.Request) {
 	data, err := io.ReadAll(r.Body)
 	if err != nil {
-		logger.LogError("signUp", err)
+		logError("signUp", err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	var usr domain.SighUpAndInInput
 	if err := json.Unmarshal(data, &usr); err != nil {
-		logger.LogError("signUp", err)
+		logError("signUp", err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	if err := usr.Validate(); err != nil {
-		logger.LogError("signUp", err)
+		logError("signUp", err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -37,34 +38,36 @@ func (s *APIServer) SighUp(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusConflict)
 			return
 		} else {
-			logger.LogError("signUp", err)
+			logError("signUp", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 
 	}
 
-	w.WriteHeader(http.StatusOK)
+	// атоматический авторизируем пользователя.
+	r.Body = io.NopCloser(bytes.NewBuffer(data))
+	s.SighIn(w, r)
 }
 
-// Login отвечает за аутентификацию пользователя по логину и паролю. Проверяет наличие токена.
+// SighIn отвечает за аутентификацию пользователя по логину и паролю. Проверяет наличие токена.
 func (s *APIServer) SighIn(w http.ResponseWriter, r *http.Request) {
 	data, err := io.ReadAll(r.Body)
 	if err != nil {
-		logger.LogError("signIn", err)
+		logError("signIn", err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	var usr domain.SighUpAndInInput
 	if err := json.Unmarshal(data, &usr); err != nil {
-		logger.LogError("signIn", err)
+		logError("signIn", err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	if err := usr.Validate(); err != nil {
-		logger.LogError("signIn", err)
+		logError("signIn", err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -73,10 +76,10 @@ func (s *APIServer) SighIn(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		// пользователь не найден.
 		if errors.Is(err, domain.ErrUserNotFound) {
-			logger.LogError("signIn", err)
-			w.WriteHeader(http.StatusBadRequest)
+			logError("signIn", err)
+			w.WriteHeader(http.StatusUnauthorized)
 		}
-		logger.LogError("signIn", err)
+		logError("signIn", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
