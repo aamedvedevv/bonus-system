@@ -1,6 +1,7 @@
 package transport
 
 import (
+	"encoding/json"
 	"errors"
 	"io"
 	"net/http"
@@ -37,4 +38,28 @@ func (s *APIServer) OrderUploading(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusAccepted)
+}
+
+// GetAllOrders выводит отсортированный по дате список заказов пользователя.
+func (s *APIServer) GetAllOrders(w http.ResponseWriter, r *http.Request) {
+	orders, err := s.orders.GetAllOrders(r.Context())
+	if err != nil {
+		if errors.Is(err, domain.ErrNoData) {
+			logError("getAllOrders", err)
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+		logError("getAllOrders", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	ordersJSON, err := json.Marshal(orders)
+	if err != nil {
+		logError("getAllOrders", err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	w.Write(ordersJSON)
 }

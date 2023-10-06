@@ -2,7 +2,8 @@ package service
 
 import (
 	"context"
-	"fmt"
+	"database/sql"
+	"errors"
 	"time"
 
 	"github.com/AlexCorn999/bonus-system/internal/domain"
@@ -10,6 +11,7 @@ import (
 
 type OrderRepository interface {
 	AddOrder(order domain.Order) error
+	GetAllOrders(userID int64) ([]domain.Order, error)
 }
 
 type Orders struct {
@@ -29,16 +31,33 @@ func (o *Orders) AddOrderID(ctx context.Context, orderID string) error {
 
 	userID, ok := ctx.Value(domain.UserIDKeyForContext).(int64)
 	if !ok {
-		return fmt.Errorf("incorrect user id - %s", orderID)
+		return errors.New("incorrect user id")
 	}
 
 	order := domain.Order{
 		OrderID:    orderID,
 		Status:     domain.Registered,
-		UploadedAt: time.Now(),
+		UploadedAt: time.Now().Format(time.RFC3339),
 		Bonuses:    0,
 		UserID:     userID,
 	}
 
 	return o.repo.AddOrder(order)
+}
+
+func (o *Orders) GetAllOrders(ctx context.Context) ([]domain.Order, error) {
+	userID, ok := ctx.Value(domain.UserIDKeyForContext).(int64)
+	if !ok {
+		return nil, errors.New("incorrect user id")
+	}
+
+	orders, err := o.repo.GetAllOrders(userID)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, domain.ErrNoData
+		}
+		return nil, err
+	}
+
+	return orders, nil
 }

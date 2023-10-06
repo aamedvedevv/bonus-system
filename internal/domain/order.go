@@ -2,7 +2,6 @@ package domain
 
 import (
 	"errors"
-	"time"
 )
 
 type OrderStatus string
@@ -11,6 +10,7 @@ var (
 	ErrAlreadyUploadedByThisUser    = errors.New("the order number has already been uploaded by this user")
 	ErrAlreadyUploadedByAnotherUser = errors.New("the order number has already been uploaded by another user")
 	ErrIncorrectOrder               = errors.New("incorrect order id")
+	ErrNoData                       = errors.New("no response data")
 )
 
 const (
@@ -25,9 +25,9 @@ const (
 )
 
 type Order struct {
-	OrderID    string      `json:"order_id"`
+	OrderID    string      `json:"number"`
 	Status     OrderStatus `json:"status"`
-	UploadedAt time.Time   `json:"uploaded_at"`
-	Bonuses    float32     `json:"bonuses"`
-	UserID     int64       `json:"user_id"`
+	Bonuses    float32     `json:"accrual"`
+	UploadedAt string      `json:"uploaded_at"`
+	UserID     int64       `json:"-"`
 }

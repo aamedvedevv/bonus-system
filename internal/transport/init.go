@@ -57,6 +57,7 @@ func (s *APIServer) configureRouter() {
 	s.router.Post("/api/user/register", s.SighUp)
 	s.router.Post("/api/user/login", s.SighIn)
 	s.router.With(s.authMiddleware).Post("/api/user/orders", s.OrderUploading)
+	s.router.With(s.authMiddleware).Get("/api/user/orders", s.GetAllOrders)
 }
 
 func (s *APIServer) configureLogger() error {
