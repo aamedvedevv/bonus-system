@@ -6,17 +6,20 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type Config struct {
 	Port     string
 	DBPort   string
+	TokenTTL time.Duration
 	LogLevel string
 }
 
 func NewConfig() *Config {
 	return &Config{
 		Port:     ":8080",
+		TokenTTL: time.Minute * 30,
 		LogLevel: "debug",
 	}
 }

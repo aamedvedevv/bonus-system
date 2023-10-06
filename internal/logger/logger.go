@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -31,14 +30,14 @@ func (r *LoggingResponseWriter) WriteHeader(statusCode int) {
 	r.ResponseData.Status = statusCode
 }
 
-func logFields(handler string) logrus.Fields {
+func logFields(handler string) log.Fields {
 	return log.Fields{
 		"handler": handler,
 	}
 }
 
 func LogError(handler string, err error) {
-	logrus.WithFields(logFields(handler)).Error(err)
+	log.WithFields(logFields(handler)).Error(err)
 }
 
 // WithLogging выполняет функцию middleware с логированием.

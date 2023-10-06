@@ -1,4 +1,4 @@
-package http
+package transport
 
 import (
 	"net/http"
@@ -44,7 +44,7 @@ func (s *APIServer) Start() error {
 	defer s.storage.Close()
 
 	hasher := hash.NewSHA1Hasher("salt")
-	s.users = service.NewUsers(db, hasher, []byte("sample secret"))
+	s.users = service.NewUsers(db, hasher, []byte("sample secret"), s.config.TokenTTL)
 
 	s.logger.Info("starting api server")
 
@@ -54,7 +54,7 @@ func (s *APIServer) Start() error {
 func (s *APIServer) configureRouter() {
 	s.router.Use(logger.WithLogging)
 	s.router.Post("/api/user/register", s.SighUp)
-	//s.router.Post("/api/user/login", s.SighIn)
+	s.router.Post("/api/user/login", s.SighIn)
 }
 
 func (s *APIServer) configureLogger() error {

@@ -1,12 +1,16 @@
-package entities
+package domain
 
 import (
+	"errors"
 	"time"
 
 	"github.com/go-playground/validator/v10"
 )
 
-var validate *validator.Validate
+var (
+	validate        *validator.Validate
+	ErrUserNotFound = errors.New("user with such credentials not found")
+)
 
 type User struct {
 	ID           int       `json:"id"`
@@ -19,11 +23,11 @@ func init() {
 	validate = validator.New()
 }
 
-type SighUpInput struct {
+type SighUpAndInInput struct {
 	Login    string `json:"login" validate:"required,gte=2"`
 	Password string `json:"password" validate:"required,gte=4"`
 }
 
-func (i *SighUpInput) Validate() error {
+func (i *SighUpAndInInput) Validate() error {
 	return validate.Struct(i)
 }
