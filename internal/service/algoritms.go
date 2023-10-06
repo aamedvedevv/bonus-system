@@ -1,6 +1,8 @@
 package service
 
-import "strconv"
+import (
+	"strconv"
+)
 
 // checkOrderNumber проверяет номер заказа по алгоритму Луна.
 func checkOrderNumber(orderNumber string) bool {

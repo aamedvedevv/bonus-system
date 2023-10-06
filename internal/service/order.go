@@ -23,12 +23,11 @@ func NewOrders(repo OrderRepository) *Orders {
 }
 
 func (o *Orders) AddOrderID(ctx context.Context, orderID string) error {
-	if checkOrderNumber(orderID) {
+	if !checkOrderNumber(orderID) {
 		return domain.ErrIncorrectOrder
 	}
 
-	userID, ok := ctx.Value("userID").(int64)
-	fmt.Println(userID)
+	userID, ok := ctx.Value(domain.UserIDKeyForContext).(int64)
 	if !ok {
 		return fmt.Errorf("incorrect user id - %s", orderID)
 	}

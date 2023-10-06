@@ -19,6 +19,11 @@ type User struct {
 	RegisteredAt time.Time `json:"registered_at"`
 }
 
+// UserIDKey ключ для context.
+type UserIDKey string
+
+const UserIDKeyForContext UserIDKey = "userID"
+
 func init() {
 	validate = validator.New()
 }

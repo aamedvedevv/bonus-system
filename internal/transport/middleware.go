@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/AlexCorn999/bonus-system/internal/domain"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -89,7 +90,7 @@ func (s *APIServer) authMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), "userID", userID)
+		ctx := context.WithValue(r.Context(), domain.UserIDKeyForContext, userID)
 		r = r.WithContext(ctx)
 		next.ServeHTTP(w, r)
 	})
