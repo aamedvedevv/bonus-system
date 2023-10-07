@@ -62,6 +62,7 @@ func (s *APIServer) configureRouter() {
 	s.router.With(s.authMiddleware).Get("/api/user/orders", s.GetAllOrders)
 	s.router.With(s.authMiddleware).Get("/api/user/balance", s.Balance)
 	s.router.With(s.authMiddleware).Post("/api/user/balance/withdraw", s.Withdraw)
+	s.router.With(s.authMiddleware).Get("/api/user/withdrawals", s.Withdrawals)
 }
 
 func (s *APIServer) configureLogger() error {

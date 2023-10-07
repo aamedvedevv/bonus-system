@@ -14,6 +14,7 @@ type BonusesRepository interface {
 	Balance(userID int64) (float32, error)
 	WithdrawBalance(userID int64) (float32, error)
 	Withdraw(withdraw domain.Withdraw) error
+	Withdrawals(userID int64) ([]domain.Withdraw, error)
 }
 
 type Bonuses struct {
@@ -102,4 +103,18 @@ func (b *Bonuses) Withdraw(ctx context.Context, withdraw domain.Withdraw) error 
 	}
 
 	return b.repo.Withdraw(with)
+}
+
+func (b *Bonuses) Withdrawals(ctx context.Context) ([]domain.Withdraw, error) {
+	userID, ok := ctx.Value(domain.UserIDKeyForContext).(int64)
+	if !ok {
+		return nil, errors.New("incorrect user id")
+	}
+
+	withdrawals, err := b.repo.Withdrawals(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	return withdrawals, nil
 }

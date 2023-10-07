@@ -36,6 +36,36 @@ func (s *Storage) Withdraw(withdraw domain.Withdraw) error {
 	return nil
 }
 
+// Withdrawals возвращает все списания бонусов пользователя.
+func (s *Storage) Withdrawals(userID int64) ([]domain.Withdraw, error) {
+	var withdrawals []domain.Withdraw
+	rows, err := s.db.Query("SELECT order_id, bonuses, uploaded_at FROM withdrawals WHERE user_id = $1 ORDER BY uploaded_at DESC", userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var withdraw domain.Withdraw
+		err := rows.Scan(&withdraw.OrderID, &withdraw.Bonuses, &withdraw.UploadedAt)
+		if err != nil {
+			return nil, err
+		}
+		withdrawals = append(withdrawals, withdraw)
+	}
+
+	err = rows.Err()
+	if err != nil {
+		return nil, err
+	}
+
+	if len(withdrawals) == 0 {
+		return nil, domain.ErrNoWithdraws
+	}
+
+	return withdrawals, nil
+}
+
 // Balance возвращает весь баланс пользователя.
 func (s *Storage) Balance(userID int64) (float32, error) {
 	var nullableBalance sql.NullFloat64

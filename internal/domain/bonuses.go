@@ -10,7 +10,7 @@ var (
 type Withdraw struct {
 	OrderID    string  `json:"order"`
 	Bonuses    float32 `json:"sum"`
-	UploadedAt string  `json:"-"`
+	UploadedAt string  `json:"processed_at"`
 	UserID     int64   `json:"-"`
 }
 

@@ -69,3 +69,30 @@ func (s *APIServer) Withdraw(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+
+// Withdrawals выводит отсортированный по дате список списаний бонусов пользователя.
+func (s *APIServer) Withdrawals(w http.ResponseWriter, r *http.Request) {
+	withdrawals, err := s.withdraw.Withdrawals(r.Context())
+	if err != nil {
+		// поправить 204 ошибку
+		if errors.Is(err, domain.ErrNoWithdraws) {
+			logError("withdrawals", err)
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+		logError("withdrawals", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	withdrawalsJSON, err := json.Marshal(withdrawals)
+	if err != nil {
+		logError("withdrawals", err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(withdrawalsJSON)
+}
