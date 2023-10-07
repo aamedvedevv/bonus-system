@@ -1,6 +1,10 @@
 package repository
 
-import "github.com/AlexCorn999/bonus-system/internal/domain"
+import (
+	"database/sql"
+
+	"github.com/AlexCorn999/bonus-system/internal/domain"
+)
 
 // Withdraw добавляет списания бонусов пользователя.
 func (s *Storage) Withdraw(withdraw domain.Withdraw) error {
@@ -34,17 +38,33 @@ func (s *Storage) Withdraw(withdraw domain.Withdraw) error {
 
 // Balance возвращает весь баланс пользователя.
 func (s *Storage) Balance(userID int64) (float32, error) {
-	var balance float32
+	var nullableBalance sql.NullFloat64
 	err := s.db.QueryRow("SELECT SUM(bonuses) FROM orders WHERE user_id=$1", userID).
-		Scan(&balance)
+		Scan(&nullableBalance)
+	if err != nil {
+		return 0, err
+	}
+	if !nullableBalance.Valid {
+		return 0, nil
+	}
+
+	balance := float32(nullableBalance.Float64)
 	return balance, err
 }
 
 // WithdrawBalance возвращает сумму списанных баллов пользователя.
 func (s *Storage) WithdrawBalance(userID int64) (float32, error) {
-	var balance float32
+	var nullableBalance sql.NullFloat64
 	err := s.db.QueryRow("SELECT SUM(bonuses) FROM withdrawals WHERE user_id=$1", userID).
-		Scan(&balance)
+		Scan(&nullableBalance)
+	if err != nil {
+		return 0, err
+	}
+	if !nullableBalance.Valid {
+		return 0, nil
+	}
+
+	balance := float32(nullableBalance.Float64)
 	return balance, err
 }
 
