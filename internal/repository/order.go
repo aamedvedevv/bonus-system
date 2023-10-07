@@ -65,5 +65,9 @@ func (s *Storage) GetAllOrders(userID int64) ([]domain.Order, error) {
 		return nil, err
 	}
 
+	if len(orders) == 0 {
+		return nil, domain.ErrNoData
+	}
+
 	return orders, nil
 }

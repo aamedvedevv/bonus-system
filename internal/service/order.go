@@ -2,8 +2,8 @@ package service
 
 import (
 	"context"
-	"database/sql"
 	"errors"
+	"strings"
 	"time"
 
 	"github.com/AlexCorn999/bonus-system/internal/domain"
@@ -25,6 +25,12 @@ func NewOrders(repo OrderRepository) *Orders {
 }
 
 func (o *Orders) AddOrderID(ctx context.Context, orderID string) error {
+
+	trimmedStr := strings.TrimSpace(orderID)
+	if len(trimmedStr) == 0 {
+		return domain.ErrIncorrectOrder
+	}
+
 	if !checkOrderNumber(orderID) {
 		return domain.ErrIncorrectOrder
 	}
@@ -53,9 +59,6 @@ func (o *Orders) GetAllOrders(ctx context.Context) ([]domain.Order, error) {
 
 	orders, err := o.repo.GetAllOrders(userID)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, domain.ErrNoData
-		}
 		return nil, err
 	}
 

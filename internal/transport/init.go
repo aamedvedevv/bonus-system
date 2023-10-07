@@ -12,12 +12,13 @@ import (
 )
 
 type APIServer struct {
-	config  *config.Config
-	router  *chi.Mux
-	logger  *log.Logger
-	storage *repository.Storage
-	users   *service.Users
-	orders  *service.Orders
+	config   *config.Config
+	router   *chi.Mux
+	logger   *log.Logger
+	storage  *repository.Storage
+	users    *service.Users
+	orders   *service.Orders
+	withdraw *service.Bonuses
 }
 
 func NewAPIServer(config *config.Config) *APIServer {
@@ -46,6 +47,7 @@ func (s *APIServer) Start() error {
 	hasher := hash.NewSHA1Hasher("salt")
 	s.users = service.NewUsers(db, hasher, []byte("sample secret"), s.config.TokenTTL)
 	s.orders = service.NewOrders(db)
+	s.withdraw = service.NewBonuses(db)
 
 	s.logger.Info("starting api server")
 
@@ -58,6 +60,8 @@ func (s *APIServer) configureRouter() {
 	s.router.Post("/api/user/login", s.SighIn)
 	s.router.With(s.authMiddleware).Post("/api/user/orders", s.OrderUploading)
 	s.router.With(s.authMiddleware).Get("/api/user/orders", s.GetAllOrders)
+	s.router.With(s.authMiddleware).Get("/api/user/balance", s.Balance)
+	s.router.With(s.authMiddleware).Post("/api/user/balance/withdraw", s.Withdraw)
 }
 
 func (s *APIServer) configureLogger() error {
