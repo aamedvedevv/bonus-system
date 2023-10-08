@@ -57,13 +57,11 @@ func (s *APIServer) Start() error {
 	// выполяет запросы GET в систему расчета бонусов асинхронно
 	ticker := time.NewTicker(time.Millisecond * 100)
 	go func() {
-		for {
-			select {
-			case <-ticker.C:
-				s.ScoringSystem()
-			}
+		for range ticker.C {
+			s.ScoringSystem()
 		}
 	}()
+	ticker.Stop()
 
 	return http.ListenAndServe(s.config.Port, s.router)
 }
