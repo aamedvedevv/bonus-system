@@ -16,6 +16,7 @@ func (s *APIServer) ScoringSystem() {
 	orderID, err := s.scoringsystem.GetOrderStatus()
 	if err != nil {
 		fmt.Println("Error GET ORDER ID:", err)
+		return
 	}
 
 	addr := fmt.Sprintf("%s/api/orders/%s", s.config.ScoringSystemPort, orderID)

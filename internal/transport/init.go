@@ -54,10 +54,15 @@ func (s *APIServer) Start() error {
 
 	s.logger.Info("starting api server")
 
-	for i := 0; i < 20; i++ {
-		s.ScoringSystem()
-		time.Sleep(time.Second * 5)
-	}
+	ticker := time.NewTicker(time.Second * 5)
+	go func() {
+		for {
+			select {
+			case <-ticker.C:
+				s.ScoringSystem()
+			}
+		}
+	}()
 
 	return http.ListenAndServe(s.config.Port, s.router)
 }
