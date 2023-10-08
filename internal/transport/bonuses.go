@@ -26,7 +26,7 @@ func (s *APIServer) Balance(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Printf("BALANCE ---- %v\n", balanceJSON)
+	fmt.Printf("BALANCE ---- %v\n", *balance)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
