@@ -53,7 +53,7 @@ func (s *APIServer) Withdraw(w http.ResponseWriter, r *http.Request) {
 		if errors.Is(err, domain.ErrAlreadyUploadedByThisUser) {
 			logError("withdraw", err)
 
-			fmt.Printf("BALANCE ---- %v\n", withdraw)
+			fmt.Printf("WITHDRAW ---- %v\n", withdraw)
 
 			w.WriteHeader(http.StatusOK)
 			return
