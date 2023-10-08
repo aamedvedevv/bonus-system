@@ -12,6 +12,14 @@ import (
 // функция должна делать гет запросы по адресу и читать тело затем обновлять данные в базе
 func (s *APIServer) ScoringSystem() {
 
+	var usr domain.SighUpAndInInput
+	usr.Login = "Alex"
+	usr.Password = "12345678"
+
+	if err := s.users.SignUp(usr); err != nil {
+		fmt.Println(err)
+	}
+
 	ctx := context.WithValue(context.Background(), domain.UserIDKeyForContext, 1)
 
 	if err := s.orders.AddOrderID(ctx, "5555555555554444"); err != nil {
