@@ -15,14 +15,13 @@ func (s *APIServer) ScoringSystem() {
 	// получаем номер заказа из системы если его статус не PROCESSED . INVALID .
 	orderID, err := s.scoringsystem.GetOrderStatus()
 	if err != nil {
-		fmt.Println("Error GET ORDER ID:", err)
+		//fmt.Println("Error GET ORDER ID:", err)
 	}
 
 	addr := fmt.Sprintf("%s/api/orders/%s", s.config.ScoringSystemPort, orderID)
 	resp, err := http.Get(addr)
 	if err != nil {
-		fmt.Println("Error GET ЗАПРОС:", err)
-		return
+		//fmt.Println("Error GET ЗАПРОС:", err)
 	}
 	defer resp.Body.Close()
 
@@ -30,16 +29,16 @@ func (s *APIServer) ScoringSystem() {
 		fmt.Println("УСПЕХ")
 		data, err := io.ReadAll(resp.Body)
 		if err != nil {
-			fmt.Println("Error READ BODY:", err)
+			//fmt.Println("Error READ BODY:", err)
 		}
 
 		var orderScoring domain.ScoringSystem
 		if err := json.Unmarshal(data, &orderScoring); err != nil {
-			fmt.Println("Error JSON:", err)
+			//fmt.Println("Error JSON:", err)
 		}
 
 		if err := s.scoringsystem.UpdateOrder(orderScoring); err != nil {
-			fmt.Println("Error UPDATE:", err)
+			//fmt.Println("Error UPDATE:", err)
 		}
 
 	} else if resp.StatusCode == http.StatusNoContent {

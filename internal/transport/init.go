@@ -56,7 +56,7 @@ func (s *APIServer) Start() error {
 
 	for i := 0; i < 20; i++ {
 		s.ScoringSystem()
-		time.Sleep(time.Second * 1)
+		time.Sleep(time.Second * 5)
 	}
 
 	return http.ListenAndServe(s.config.Port, s.router)
