@@ -1,13 +1,22 @@
 package transport
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net/http"
+
+	"github.com/AlexCorn999/bonus-system/internal/domain"
 )
 
 // функция должна делать гет запросы по адресу и читать тело затем обновлять данные в базе
 func (s *APIServer) ScoringSystem() {
+
+	ctx := context.WithValue(context.Background(), domain.UserIDKeyForContext, 1)
+
+	s.orders.AddOrderID(ctx, "5555555555554444")
+	s.orders.AddOrderID(ctx, "20412011")
+
 	addr := fmt.Sprintf("%s/api/orders/5555555555554444", s.config.ScoringSystemPort)
 	resp, err := http.Get(addr)
 	if err != nil {
