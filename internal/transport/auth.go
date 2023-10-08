@@ -45,7 +45,7 @@ func (s *APIServer) SighUp(w http.ResponseWriter, r *http.Request) {
 
 	}
 
-	// атоматический авторизируем пользователя.
+	// атоматический авторизируем пользователя
 	r.Body = io.NopCloser(bytes.NewBuffer(data))
 	s.SighIn(w, r)
 }

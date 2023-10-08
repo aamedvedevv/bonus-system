@@ -44,7 +44,6 @@ func (s *APIServer) OrderUploading(w http.ResponseWriter, r *http.Request) {
 func (s *APIServer) GetAllOrders(w http.ResponseWriter, r *http.Request) {
 	orders, err := s.orders.GetAllOrders(r.Context())
 	if err != nil {
-		// поправить 204 ошибку
 		if errors.Is(err, domain.ErrNoData) {
 			logError("getAllOrders", err)
 			w.WriteHeader(http.StatusNoContent)

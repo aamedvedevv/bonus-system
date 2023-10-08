@@ -24,8 +24,8 @@ func NewOrders(repo OrderRepository) *Orders {
 	}
 }
 
+// AddOrderID загружает номер заказа в систему.
 func (o *Orders) AddOrderID(ctx context.Context, orderID string) error {
-
 	trimmedStr := strings.TrimSpace(orderID)
 	if len(trimmedStr) == 0 {
 		return domain.ErrIncorrectOrder
@@ -51,6 +51,7 @@ func (o *Orders) AddOrderID(ctx context.Context, orderID string) error {
 	return o.repo.AddOrder(order)
 }
 
+// GetAllOrders выводит отсортированный по дате список заказов пользователя.
 func (o *Orders) GetAllOrders(ctx context.Context) ([]domain.Order, error) {
 	userID, ok := ctx.Value(domain.UserIDKeyForContext).(int64)
 	if !ok {

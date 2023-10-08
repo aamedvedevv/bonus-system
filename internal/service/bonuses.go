@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"errors"
-	"fmt"
 	"strings"
 	"time"
 
@@ -27,8 +26,8 @@ func NewBonuses(repo BonusesRepository) *Bonuses {
 	}
 }
 
+// Balance выводит сумму баллов лояльности и использованных за весь период регистрации баллов пользователя.
 func (b *Bonuses) Balance(ctx context.Context) (*domain.BalanceOutput, error) {
-
 	userID, ok := ctx.Value(domain.UserIDKeyForContext).(int64)
 	if !ok {
 		return nil, errors.New("incorrect user id")
@@ -46,19 +45,17 @@ func (b *Bonuses) Balance(ctx context.Context) (*domain.BalanceOutput, error) {
 		return nil, err
 	}
 
+	// чтобы узнать баланс пользователя вычитаем кол-во использованных бонусов
 	newBalanceUser := balanceUser - balanceWithdraws
 
 	var balance domain.BalanceOutput
-
-	// поменял
 	balance.Bonuses = newBalanceUser
 	balance.Withdraw = balanceWithdraws
-
 	return &balance, nil
 }
 
+// Withdraw реализует списание бонусов пользователя в учет суммы нового заказа.
 func (b *Bonuses) Withdraw(ctx context.Context, withdraw domain.Withdraw) error {
-
 	trimmedStr := strings.TrimSpace(withdraw.OrderID)
 	if len(trimmedStr) == 0 {
 		return domain.ErrIncorrectOrder
@@ -73,18 +70,12 @@ func (b *Bonuses) Withdraw(ctx context.Context, withdraw domain.Withdraw) error 
 		return errors.New("incorrect user id")
 	}
 
-	// проверка что внутри
-	fmt.Println(withdraw)
-
 	with := domain.Withdraw{
 		OrderID:    withdraw.OrderID,
 		Bonuses:    withdraw.Bonuses,
 		UploadedAt: time.Now().Format(time.RFC3339),
 		UserID:     userID,
 	}
-
-	// проверка что внутри
-	fmt.Println(with)
 
 	// узнаем баланс бонусов пользователя
 	balanceUser, err := b.repo.Balance(userID)
@@ -109,6 +100,7 @@ func (b *Bonuses) Withdraw(ctx context.Context, withdraw domain.Withdraw) error 
 	return b.repo.Withdraw(with)
 }
 
+// Withdrawals выводит отсортированный по дате список списаний бонусов пользователя.
 func (b *Bonuses) Withdrawals(ctx context.Context) ([]domain.Withdraw, error) {
 	userID, ok := ctx.Value(domain.UserIDKeyForContext).(int64)
 	if !ok {

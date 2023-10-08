@@ -54,6 +54,7 @@ func (s *APIServer) Start() error {
 
 	s.logger.Info("starting api server")
 
+	// выполяет запросы GET в систему расчета бонусов асинхронно
 	ticker := time.NewTicker(time.Millisecond * 100)
 	go func() {
 		for {
