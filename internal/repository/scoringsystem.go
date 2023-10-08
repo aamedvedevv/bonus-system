@@ -5,7 +5,7 @@ import "github.com/AlexCorn999/bonus-system/internal/domain"
 // GetOrderStatus получает orderID если его статус не PROCESSED или INVALID.
 func (s *Storage) GetOrderStatus() (string, error) {
 	var orderID string
-	err := s.db.QueryRow("SELECT * FROM orders WHERE status NOT IN ('PROCESSED', 'INVALID') LIMIT 1").
+	err := s.db.QueryRow("SELECT order_id FROM orders WHERE status NOT IN ('PROCESSED', 'INVALID') LIMIT 1").
 		Scan(&orderID)
 	return orderID, err
 }
