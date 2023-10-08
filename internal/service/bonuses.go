@@ -46,8 +46,12 @@ func (b *Bonuses) Balance(ctx context.Context) (*domain.BalanceOutput, error) {
 		return nil, err
 	}
 
+	newBalanceUser := balanceUser - balanceWithdraws
+
 	var balance domain.BalanceOutput
-	balance.Bonuses = balanceUser
+
+	// поменял
+	balance.Bonuses = newBalanceUser
 	balance.Withdraw = balanceWithdraws
 
 	return &balance, nil
