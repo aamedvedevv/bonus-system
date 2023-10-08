@@ -51,6 +51,8 @@ func (s *APIServer) Start() error {
 
 	s.logger.Info("starting api server")
 
+	s.ScoringSystem()
+
 	return http.ListenAndServe(s.config.Port, s.router)
 }
 

@@ -10,10 +10,11 @@ import (
 )
 
 type Config struct {
-	Port     string
-	DBPort   string
-	TokenTTL time.Duration
-	LogLevel string
+	Port              string
+	DBPort            string
+	ScoringSystemPort string
+	TokenTTL          time.Duration
+	LogLevel          string
 }
 
 func NewConfig() *Config {
@@ -56,9 +57,11 @@ func (c *Config) ParseFlags() {
 	flag.Var(port, "a", "net address host:port")
 	// host=127.0.0.1 port=5432 user=postgres sslmode=disable password=1234
 	dbPort := flag.String("d", "", "port for database")
+	scoringSystemPort := flag.String("r", "", "port for scoring system")
 
 	flag.Parse()
 	c.DBPort = *dbPort
+	c.ScoringSystemPort = *scoringSystemPort
 
 	// проверка значения addr, чтобы записать в переменную Port.
 	if port.String() != ":0" {
@@ -73,6 +76,11 @@ func (c *Config) ParseFlags() {
 	// Установка порта подключения к базе данных через переменную окружения.
 	if envPath := os.Getenv("DATABASE_URI"); envPath != "" {
 		c.DBPort = envPath
+	}
+
+	// Установка адреса системы начисления баллов.
+	if envScoring := os.Getenv("ACCRUAL_SYSTEM_ADDRESS"); envScoring != "" {
+		c.ScoringSystemPort = envScoring
 	}
 
 }
