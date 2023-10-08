@@ -3,6 +3,7 @@ package transport
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 
@@ -24,6 +25,8 @@ func (s *APIServer) Balance(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
+
+	fmt.Printf("BALANCE ---- %v\n", balanceJSON)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
@@ -49,6 +52,9 @@ func (s *APIServer) Withdraw(w http.ResponseWriter, r *http.Request) {
 	if err := s.withdraw.Withdraw(r.Context(), withdraw); err != nil {
 		if errors.Is(err, domain.ErrAlreadyUploadedByThisUser) {
 			logError("withdraw", err)
+
+			fmt.Printf("BALANCE ---- %v\n", withdraw)
+
 			w.WriteHeader(http.StatusOK)
 			return
 		} else if errors.Is(err, domain.ErrAlreadyUploadedByAnotherUser) {
