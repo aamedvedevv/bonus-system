@@ -15,11 +15,13 @@ var (
 
 const (
 	// заказ загружен в систему, но не попал в обработку.
-	Registered OrderStatus = "NEW"
+	NewOrder OrderStatus = "NEW"
 	// вознаграждение за заказ рассчитывается.
-	Invalid OrderStatus = "PROCESSING"
+	Processing OrderStatus = "PROCESSING"
+	// заказ зарегистрирован, но вознаграждение не рассчитано.
+	Registered OrderStatus = "REGISTERED"
 	// система расчёта вознаграждений отказала в расчёте.
-	Processing OrderStatus = "INVALID"
+	Invalid OrderStatus = "INVALID"
 	// данные по заказу проверены и информация о расчёте успешно получена.
 	Processed OrderStatus = "PROCESSED"
 )

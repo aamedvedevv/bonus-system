@@ -1,11 +1,10 @@
 package transport
 
 import (
-	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
-	"time"
 
 	"github.com/AlexCorn999/bonus-system/internal/domain"
 )
@@ -13,65 +12,39 @@ import (
 // функция должна делать гет запросы по адресу и читать тело затем обновлять данные в базе
 func (s *APIServer) ScoringSystem() {
 
-	var usr domain.SighUpAndInInput
-	usr.Login = "Alex"
-	usr.Password = "12345678"
-
-	if err := s.users.SignUp(usr); err != nil {
-		fmt.Println(err)
+	// получаем номер заказа из системы если его статус не PROCESSED . INVALID .
+	orderID, err := s.scoringsystem.GetOrderStatus()
+	if err != nil {
+		fmt.Println("Error GET ORDER ID:", err)
 	}
 
-	var userID int64 = 1
-	ctx := context.WithValue(context.Background(), domain.UserIDKeyForContext, userID)
-
-	if err := s.orders.AddOrderID(ctx, "5555555555554444"); err != nil {
-		fmt.Println(err)
-	}
-	if err := s.orders.AddOrderID(ctx, "20412011"); err != nil {
-		fmt.Println(err)
-	}
-	user, _ := ctx.Value(domain.UserIDKeyForContext).(int64)
-	fmt.Println(user)
-
-	time.Sleep(time.Second * 10)
-	addr := fmt.Sprintf("%s/api/orders/5555555555554444", s.config.ScoringSystemPort)
+	addr := fmt.Sprintf("%s/api/orders/%s", s.config.ScoringSystemPort, orderID)
 	resp, err := http.Get(addr)
 	if err != nil {
-		fmt.Println("Error:", err)
+		fmt.Println("Error GET ЗАПРОС:", err)
 		return
 	}
 	defer resp.Body.Close()
 
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		fmt.Println("Error:", err)
-		return
+	if resp.StatusCode == http.StatusOK {
+		fmt.Println("УСПЕХ")
+		data, err := io.ReadAll(resp.Body)
+		if err != nil {
+			fmt.Println("Error READ BODY:", err)
+		}
+
+		var orderScoring domain.ScoringSystem
+		if err := json.Unmarshal(data, &orderScoring); err != nil {
+			fmt.Println("Error JSON:", err)
+		}
+
+		if err := s.scoringsystem.UpdateOrder(orderScoring); err != nil {
+			fmt.Println("Error UPDATE:", err)
+		}
+
+	} else if resp.StatusCode == http.StatusNoContent {
+		fmt.Println("Не зарегистрированный заказ")
+	} else {
+		fmt.Println("ДРУГАЯ ОШИБКА")
 	}
-
-	fmt.Println("Response status code:", resp.StatusCode)
-	fmt.Println("Response body:", string(body))
-
-	addr2 := fmt.Sprintf("%s/api/orders/20412011", s.config.ScoringSystemPort)
-	resp2, err := http.Get(addr2)
-	if err != nil {
-		fmt.Println("Error:", err)
-		return
-	}
-	defer resp2.Body.Close()
-
-	body2, err := io.ReadAll(resp2.Body)
-	if err != nil {
-		fmt.Println("Error:", err)
-		return
-	}
-
-	fmt.Println("Response status code:", resp2.StatusCode)
-	fmt.Println("Response body:", string(body2))
-	// берем заказ из системы если его нету то ошибка 204 заказа нет в системе
-
-	// если заказ есть то делаем гет запрос
-
-	// читаем тело ответа и заносим в поля заказа
-
-	// 429 — превышено количество запросов к сервису.
 }

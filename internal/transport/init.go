@@ -2,6 +2,7 @@ package transport
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/AlexCorn999/bonus-system/internal/config"
 	"github.com/AlexCorn999/bonus-system/internal/hash"
@@ -12,13 +13,14 @@ import (
 )
 
 type APIServer struct {
-	config   *config.Config
-	router   *chi.Mux
-	logger   *log.Logger
-	storage  *repository.Storage
-	users    *service.Users
-	orders   *service.Orders
-	withdraw *service.Bonuses
+	config        *config.Config
+	router        *chi.Mux
+	logger        *log.Logger
+	storage       *repository.Storage
+	users         *service.Users
+	orders        *service.Orders
+	withdraw      *service.Bonuses
+	scoringsystem *service.ScoringSystem
 }
 
 func NewAPIServer(config *config.Config) *APIServer {
@@ -48,10 +50,14 @@ func (s *APIServer) Start() error {
 	s.users = service.NewUsers(db, hasher, []byte("sample secret"), s.config.TokenTTL)
 	s.orders = service.NewOrders(db)
 	s.withdraw = service.NewBonuses(db)
+	s.scoringsystem = service.NewScoringSystem(db)
 
 	s.logger.Info("starting api server")
 
-	s.ScoringSystem()
+	for i := 0; i < 20; i++ {
+		s.ScoringSystem()
+		time.Sleep(time.Second * 1)
+	}
 
 	return http.ListenAndServe(s.config.Port, s.router)
 }

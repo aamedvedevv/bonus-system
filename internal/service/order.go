@@ -42,7 +42,7 @@ func (o *Orders) AddOrderID(ctx context.Context, orderID string) error {
 
 	order := domain.Order{
 		OrderID:    orderID,
-		Status:     domain.Registered,
+		Status:     domain.NewOrder,
 		UploadedAt: time.Now().Format(time.RFC3339),
 		Bonuses:    0,
 		UserID:     userID,
