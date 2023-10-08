@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"time"
 
 	"github.com/AlexCorn999/bonus-system/internal/domain"
 )
@@ -32,6 +33,7 @@ func (s *APIServer) ScoringSystem() {
 	user, _ := ctx.Value(domain.UserIDKeyForContext).(int64)
 	fmt.Println(user)
 
+	time.Sleep(time.Second * 10)
 	addr := fmt.Sprintf("%s/api/orders/5555555555554444", s.config.ScoringSystemPort)
 	resp, err := http.Get(addr)
 	if err != nil {
