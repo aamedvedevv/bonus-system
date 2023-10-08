@@ -68,8 +68,6 @@ func (s *APIServer) Start() error {
 		}
 	}()
 
-	ticker.Stop()
-
 	return http.ListenAndServe(s.config.Port, s.router)
 }
 
