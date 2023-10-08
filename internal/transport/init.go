@@ -54,7 +54,7 @@ func (s *APIServer) Start() error {
 
 	s.logger.Info("starting api server")
 
-	ticker := time.NewTicker(time.Second * 5)
+	ticker := time.NewTicker(time.Millisecond * 20)
 	go func() {
 		for {
 			select {
