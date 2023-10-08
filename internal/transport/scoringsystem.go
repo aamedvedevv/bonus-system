@@ -14,8 +14,12 @@ func (s *APIServer) ScoringSystem() {
 
 	ctx := context.WithValue(context.Background(), domain.UserIDKeyForContext, 1)
 
-	s.orders.AddOrderID(ctx, "5555555555554444")
-	s.orders.AddOrderID(ctx, "20412011")
+	if err := s.orders.AddOrderID(ctx, "5555555555554444"); err != nil {
+		fmt.Println(err)
+	}
+	if err := s.orders.AddOrderID(ctx, "20412011"); err != nil {
+		fmt.Println(err)
+	}
 
 	addr := fmt.Sprintf("%s/api/orders/5555555555554444", s.config.ScoringSystemPort)
 	resp, err := http.Get(addr)
