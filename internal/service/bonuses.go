@@ -112,5 +112,22 @@ func (b *Bonuses) Withdrawals(ctx context.Context) ([]domain.Withdraw, error) {
 		return nil, err
 	}
 
-	return withdrawals, nil
+	// Пагинация
+	startIndex := max(0, len(withdrawals))
+	endIndex := min(len(withdrawals), len(withdrawals)+10)
+	return withdrawals[startIndex:endIndex], nil
+}
+
+func max(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
+}
+
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
 }
