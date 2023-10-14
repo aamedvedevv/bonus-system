@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/AlexCorn999/bonus-system/internal/domain"
+	"github.com/shopspring/decimal"
 )
 
 // Withdraw добавляет списания бонусов пользователя.
@@ -69,34 +70,34 @@ func (s *Storage) Withdrawals(ctx context.Context, userID int64) ([]domain.Withd
 }
 
 // Balance возвращает весь баланс пользователя.
-func (s *Storage) Balance(ctx context.Context, userID int64) (float32, error) {
+func (s *Storage) Balance(ctx context.Context, userID int64) (decimal.Decimal, error) {
 	var nullableBalance sql.NullFloat64
 	err := s.db.QueryRowContext(ctx, "SELECT SUM(bonuses) FROM orders WHERE user_id=$1", userID).
 		Scan(&nullableBalance)
 	if err != nil {
-		return 0, fmt.Errorf("postgreSQL: balance %s", err)
+		return decimal.Decimal{}, fmt.Errorf("postgreSQL: balance %s", err)
 	}
 	if !nullableBalance.Valid {
-		return 0, nil
+		return decimal.Decimal{}, nil
 	}
 
-	balance := float32(nullableBalance.Float64)
+	balance := decimal.NewFromFloat(nullableBalance.Float64)
 	return balance, nil
 }
 
 // WithdrawBalance возвращает сумму списанных баллов пользователя.
-func (s *Storage) WithdrawBalance(ctx context.Context, userID int64) (float32, error) {
+func (s *Storage) WithdrawBalance(ctx context.Context, userID int64) (decimal.Decimal, error) {
 	var nullableBalance sql.NullFloat64
 	err := s.db.QueryRowContext(ctx, "SELECT SUM(bonuses) FROM withdrawals WHERE user_id=$1", userID).
 		Scan(&nullableBalance)
 	if err != nil {
-		return 0, fmt.Errorf("postgreSQL: withdrawBalance %s", err)
+		return decimal.Decimal{}, fmt.Errorf("postgreSQL: withdrawBalance %s", err)
 	}
 	if !nullableBalance.Valid {
-		return 0, nil
+		return decimal.Decimal{}, nil
 	}
 
-	balance := float32(nullableBalance.Float64)
+	balance := decimal.NewFromFloat(nullableBalance.Float64)
 	return balance, nil
 }
 

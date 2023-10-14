@@ -7,11 +7,12 @@ import (
 	"time"
 
 	"github.com/AlexCorn999/bonus-system/internal/domain"
+	"github.com/shopspring/decimal"
 )
 
 type BonusesRepository interface {
-	Balance(ctx context.Context, userID int64) (float32, error)
-	WithdrawBalance(ctx context.Context, userID int64) (float32, error)
+	Balance(ctx context.Context, userID int64) (decimal.Decimal, error)
+	WithdrawBalance(ctx context.Context, userID int64) (decimal.Decimal, error)
 	Withdraw(ctx context.Context, withdraw domain.Withdraw) error
 	Withdrawals(ctx context.Context, userID int64) ([]domain.Withdraw, error)
 }
@@ -46,7 +47,7 @@ func (b *Bonuses) Balance(ctx context.Context) (*domain.BalanceOutput, error) {
 	}
 
 	// чтобы узнать баланс пользователя вычитаем кол-во использованных бонусов
-	newBalanceUser := balanceUser - balanceWithdraws
+	newBalanceUser := balanceUser.Sub(balanceWithdraws)
 
 	var balance domain.BalanceOutput
 	balance.Bonuses = newBalanceUser
@@ -90,8 +91,8 @@ func (b *Bonuses) Withdraw(ctx context.Context, withdraw domain.Withdraw) error 
 	}
 
 	// проверка для проведения списания бонусов
-	sum := balanceUser - balanceWithdraws
-	if sum >= with.Bonuses {
+	sum := balanceUser.Sub(balanceWithdraws)
+	if sum.Cmp(with.Bonuses) >= 0 {
 		return b.repo.Withdraw(ctx, with)
 	} else {
 		return domain.ErrNoBonuses

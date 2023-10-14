@@ -1,6 +1,10 @@
 package domain
 
-import "errors"
+import (
+	"errors"
+
+	"github.com/shopspring/decimal"
+)
 
 var (
 	ErrNoWithdraws = errors.New("the user has no withdraws")
@@ -8,13 +12,13 @@ var (
 )
 
 type Withdraw struct {
-	OrderID    string  `json:"order"`
-	Bonuses    float32 `json:"sum"`
-	UploadedAt string  `json:"processed_at"`
-	UserID     int64   `json:"-"`
+	OrderID    string          `json:"order"`
+	Bonuses    decimal.Decimal `json:"sum"`
+	UploadedAt string          `json:"processed_at"`
+	UserID     int64           `json:"-"`
 }
 
 type BalanceOutput struct {
-	Bonuses  float32 `json:"current"`
-	Withdraw float32 `json:"withdrawn"`
+	Bonuses  decimal.Decimal `json:"current"`
+	Withdraw decimal.Decimal `json:"withdrawn"`
 }

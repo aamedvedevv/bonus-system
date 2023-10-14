@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/AlexCorn999/bonus-system/internal/domain"
+	"github.com/shopspring/decimal"
 )
 
 type OrderRepository interface {
@@ -44,7 +45,7 @@ func (o *Orders) AddOrderID(ctx context.Context, orderID string) error {
 		OrderID:    orderID,
 		Status:     domain.NewOrder,
 		UploadedAt: time.Now().Format(time.RFC3339),
-		Bonuses:    0,
+		Bonuses:    decimal.Decimal{},
 		UserID:     userID,
 	}
 

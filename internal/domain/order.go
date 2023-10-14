@@ -2,6 +2,8 @@ package domain
 
 import (
 	"errors"
+
+	"github.com/shopspring/decimal"
 )
 
 type OrderStatus string
@@ -27,9 +29,9 @@ const (
 )
 
 type Order struct {
-	OrderID    string      `json:"number"`
-	Status     OrderStatus `json:"status"`
-	Bonuses    float32     `json:"accrual"`
-	UploadedAt string      `json:"uploaded_at"`
-	UserID     int64       `json:"-"`
+	OrderID    string          `json:"number"`
+	Status     OrderStatus     `json:"status"`
+	Bonuses    decimal.Decimal `json:"accrual"`
+	UploadedAt string          `json:"uploaded_at"`
+	UserID     int64           `json:"-"`
 }
