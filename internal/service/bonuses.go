@@ -11,8 +11,8 @@ import (
 )
 
 type BonusesRepository interface {
-	Balance(ctx context.Context, userID int64) (decimal.Decimal, error)
-	WithdrawBalance(ctx context.Context, userID int64) (decimal.Decimal, error)
+	Balance(ctx context.Context, userID int64) (float32, error)
+	WithdrawBalance(ctx context.Context, userID int64) (float32, error)
 	Withdraw(ctx context.Context, withdraw domain.Withdraw) error
 	Withdrawals(ctx context.Context, userID int64) ([]domain.Withdraw, error)
 }
@@ -47,10 +47,11 @@ func (b *Bonuses) Balance(ctx context.Context) (*domain.BalanceOutput, error) {
 	}
 
 	// чтобы узнать баланс пользователя вычитаем кол-во использованных бонусов
-	newBalanceUser := balanceUser.Sub(balanceWithdraws)
+	newBalanceUser := decimal.NewFromFloat32(balanceUser).Sub(decimal.NewFromFloat32(balanceWithdraws))
 
 	var balance domain.BalanceOutput
-	balance.Bonuses = newBalanceUser
+	// проверить
+	balance.Bonuses = float32(newBalanceUser.InexactFloat64())
 	balance.Withdraw = balanceWithdraws
 	return &balance, nil
 }
@@ -91,8 +92,8 @@ func (b *Bonuses) Withdraw(ctx context.Context, withdraw domain.Withdraw) error 
 	}
 
 	// проверка для проведения списания бонусов
-	sum := balanceUser.Sub(balanceWithdraws)
-	if sum.Cmp(with.Bonuses) >= 0 {
+	sum := decimal.NewFromFloat32(balanceUser).Sub(decimal.NewFromFloat32(balanceWithdraws))
+	if sum.Cmp(decimal.NewFromFloat32(with.Bonuses)) >= 0 {
 		return b.repo.Withdraw(ctx, with)
 	} else {
 		return domain.ErrNoBonuses
