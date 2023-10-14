@@ -3,14 +3,13 @@ package repository
 import (
 	"context"
 	"database/sql"
-	"errors"
 
 	"github.com/AlexCorn999/bonus-system/internal/domain"
 )
 
 // Withdraw добавляет списания бонусов пользователя.
-func (s *Storage) Withdraw(withdraw domain.Withdraw) error {
-	result, err := s.db.Exec("INSERT INTO withdrawals (order_id, bonuses, uploaded_at, user_id) values ($1, $2, $3, $4) on conflict (order_id) do nothing",
+func (s *Storage) Withdraw(ctx context.Context, withdraw domain.Withdraw) error {
+	result, err := s.db.ExecContext(ctx, "INSERT INTO withdrawals (order_id, bonuses, uploaded_at, user_id) values ($1, $2, $3, $4) on conflict (order_id) do nothing",
 		withdraw.OrderID, withdraw.Bonuses, withdraw.UploadedAt, withdraw.UserID)
 	if err != nil {
 		return err
@@ -23,7 +22,7 @@ func (s *Storage) Withdraw(withdraw domain.Withdraw) error {
 
 	if rowsAffected == 0 {
 		// проверка при возникновении конфликта.
-		userID, err := s.checkWithdraw(withdraw)
+		userID, err := s.checkWithdraw(ctx, withdraw)
 		if err != nil {
 			return err
 		}
@@ -39,15 +38,9 @@ func (s *Storage) Withdraw(withdraw domain.Withdraw) error {
 }
 
 // Withdrawals возвращает все списания бонусов пользователя.
-func (s *Storage) Withdrawals(ctx context.Context) ([]domain.Withdraw, error) {
-
-	userID, ok := ctx.Value(domain.UserIDKeyForContext).(int64)
-	if !ok {
-		return nil, errors.New("incorrect user id")
-	}
-
+func (s *Storage) Withdrawals(ctx context.Context, userID int64) ([]domain.Withdraw, error) {
 	var withdrawals []domain.Withdraw
-	rows, err := s.db.Query("SELECT order_id, bonuses, uploaded_at FROM withdrawals WHERE user_id = $1 ORDER BY uploaded_at DESC", userID)
+	rows, err := s.db.QueryContext(ctx, "SELECT order_id, bonuses, uploaded_at FROM withdrawals WHERE user_id = $1 ORDER BY uploaded_at DESC", userID)
 	if err != nil {
 		return nil, err
 	}
@@ -75,15 +68,9 @@ func (s *Storage) Withdrawals(ctx context.Context) ([]domain.Withdraw, error) {
 }
 
 // Balance возвращает весь баланс пользователя.
-func (s *Storage) Balance(ctx context.Context) (float32, error) {
-
-	userID, ok := ctx.Value(domain.UserIDKeyForContext).(int64)
-	if !ok {
-		return 0, errors.New("incorrect user id")
-	}
-
+func (s *Storage) Balance(ctx context.Context, userID int64) (float32, error) {
 	var nullableBalance sql.NullFloat64
-	err := s.db.QueryRow("SELECT SUM(bonuses) FROM orders WHERE user_id=$1", userID).
+	err := s.db.QueryRowContext(ctx, "SELECT SUM(bonuses) FROM orders WHERE user_id=$1", userID).
 		Scan(&nullableBalance)
 	if err != nil {
 		return 0, err
@@ -97,15 +84,9 @@ func (s *Storage) Balance(ctx context.Context) (float32, error) {
 }
 
 // WithdrawBalance возвращает сумму списанных баллов пользователя.
-func (s *Storage) WithdrawBalance(ctx context.Context) (float32, error) {
-
-	userID, ok := ctx.Value(domain.UserIDKeyForContext).(int64)
-	if !ok {
-		return 0, errors.New("incorrect user id")
-	}
-
+func (s *Storage) WithdrawBalance(ctx context.Context, userID int64) (float32, error) {
 	var nullableBalance sql.NullFloat64
-	err := s.db.QueryRow("SELECT SUM(bonuses) FROM withdrawals WHERE user_id=$1", userID).
+	err := s.db.QueryRowContext(ctx, "SELECT SUM(bonuses) FROM withdrawals WHERE user_id=$1", userID).
 		Scan(&nullableBalance)
 	if err != nil {
 		return 0, err
@@ -119,9 +100,9 @@ func (s *Storage) WithdrawBalance(ctx context.Context) (float32, error) {
 }
 
 // heckWithdraw проверяет на конфликт списание.
-func (s *Storage) checkWithdraw(withdraw domain.Withdraw) (int64, error) {
+func (s *Storage) checkWithdraw(ctx context.Context, withdraw domain.Withdraw) (int64, error) {
 	var userID int64
-	err := s.db.QueryRow("SELECT user_id FROM withdrawals WHERE order_id=$1", withdraw.OrderID).
+	err := s.db.QueryRowContext(ctx, "SELECT user_id FROM withdrawals WHERE order_id=$1", withdraw.OrderID).
 		Scan(&userID)
 	return userID, err
 }

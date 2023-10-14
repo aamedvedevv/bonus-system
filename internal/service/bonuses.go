@@ -10,10 +10,10 @@ import (
 )
 
 type BonusesRepository interface {
-	Balance(ctx context.Context) (float32, error)
-	WithdrawBalance(ctx context.Context) (float32, error)
-	Withdraw(withdraw domain.Withdraw) error
-	Withdrawals(ctx context.Context) ([]domain.Withdraw, error)
+	Balance(ctx context.Context, userID int64) (float32, error)
+	WithdrawBalance(ctx context.Context, userID int64) (float32, error)
+	Withdraw(ctx context.Context, withdraw domain.Withdraw) error
+	Withdrawals(ctx context.Context, userID int64) ([]domain.Withdraw, error)
 }
 
 type Bonuses struct {
@@ -28,15 +28,19 @@ func NewBonuses(repo BonusesRepository) *Bonuses {
 
 // Balance выводит сумму баллов лояльности и использованных за весь период регистрации баллов пользователя.
 func (b *Bonuses) Balance(ctx context.Context) (*domain.BalanceOutput, error) {
+	userID, ok := ctx.Value(domain.UserIDKeyForContext).(int64)
+	if !ok {
+		return nil, errors.New("incorrect user id")
+	}
 
 	// узнаем баланс бонусов пользователя
-	balanceUser, err := b.repo.Balance(ctx)
+	balanceUser, err := b.repo.Balance(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
 
 	// узнаем баланс списанных бонусов пользователя
-	balanceWithdraws, err := b.repo.WithdrawBalance(ctx)
+	balanceWithdraws, err := b.repo.WithdrawBalance(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -74,13 +78,13 @@ func (b *Bonuses) Withdraw(ctx context.Context, withdraw domain.Withdraw) error 
 	}
 
 	// узнаем баланс бонусов пользователя
-	balanceUser, err := b.repo.Balance(ctx)
+	balanceUser, err := b.repo.Balance(ctx, userID)
 	if err != nil {
 		return err
 	}
 
 	// узнаем баланс списанных бонусов пользователя
-	balanceWithdraws, err := b.repo.WithdrawBalance(ctx)
+	balanceWithdraws, err := b.repo.WithdrawBalance(ctx, userID)
 	if err != nil {
 		return err
 	}
@@ -88,15 +92,25 @@ func (b *Bonuses) Withdraw(ctx context.Context, withdraw domain.Withdraw) error 
 	// проверка для проведения списания бонусов
 	sum := balanceUser - balanceWithdraws
 	if sum >= with.Bonuses {
-		b.repo.Withdraw(with)
+		b.repo.Withdraw(ctx, with)
 	} else {
 		return domain.ErrNoBonuses
 	}
 
-	return b.repo.Withdraw(with)
+	return b.repo.Withdraw(ctx, with)
 }
 
 // Withdrawals выводит отсортированный по дате список списаний бонусов пользователя.
 func (b *Bonuses) Withdrawals(ctx context.Context) ([]domain.Withdraw, error) {
-	return b.repo.Withdrawals(ctx)
+	userID, ok := ctx.Value(domain.UserIDKeyForContext).(int64)
+	if !ok {
+		return nil, errors.New("incorrect user id")
+	}
+
+	withdrawals, err := b.repo.Withdrawals(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	return withdrawals, nil
 }

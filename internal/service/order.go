@@ -10,8 +10,8 @@ import (
 )
 
 type OrderRepository interface {
-	AddOrder(order domain.Order) error
-	GetAllOrders(userID int64) ([]domain.Order, error)
+	AddOrder(ctx context.Context, order domain.Order) error
+	GetAllOrders(ctx context.Context, userID int64) ([]domain.Order, error)
 }
 
 type Orders struct {
@@ -48,7 +48,7 @@ func (o *Orders) AddOrderID(ctx context.Context, orderID string) error {
 		UserID:     userID,
 	}
 
-	return o.repo.AddOrder(order)
+	return o.repo.AddOrder(ctx, order)
 }
 
 // GetAllOrders выводит отсортированный по дате список заказов пользователя.
@@ -58,7 +58,7 @@ func (o *Orders) GetAllOrders(ctx context.Context) ([]domain.Order, error) {
 		return nil, errors.New("incorrect user id")
 	}
 
-	orders, err := o.repo.GetAllOrders(userID)
+	orders, err := o.repo.GetAllOrders(ctx, userID)
 	if err != nil {
 		return nil, err
 	}

@@ -33,7 +33,7 @@ func (s *APIServer) SighUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := s.users.SignUp(usr); err != nil {
+	if err := s.users.SignUp(r.Context(), usr); err != nil {
 		if errors.Is(err, repository.ErrDuplicate) {
 			w.WriteHeader(http.StatusConflict)
 			return
@@ -72,7 +72,7 @@ func (s *APIServer) SighIn(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := s.users.SignIn(usr)
+	token, err := s.users.SignIn(r.Context(), usr)
 	if err != nil {
 		// пользователь не найден.
 		if errors.Is(err, domain.ErrUserNotFound) {

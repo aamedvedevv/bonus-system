@@ -17,8 +17,8 @@ type PasswordHasher interface {
 }
 
 type UserRepository interface {
-	Create(user domain.User) error
-	GetUser(login, password string) (domain.User, error)
+	Create(ctx context.Context, user domain.User) error
+	GetUser(ctx context.Context, login, password string) (domain.User, error)
 }
 
 type Users struct {
@@ -39,7 +39,7 @@ func NewUsers(repo UserRepository, hasher PasswordHasher, secret []byte, ttl tim
 }
 
 // SignUp хэширует пароль пользователя и добавляет пользователя в базу данных.
-func (u *Users) SignUp(usr domain.SighUpAndInInput) error {
+func (u *Users) SignUp(ctx context.Context, usr domain.SighUpAndInInput) error {
 	password, err := u.hasher.Hash(usr.Password)
 	if err != nil {
 		return err
@@ -51,17 +51,17 @@ func (u *Users) SignUp(usr domain.SighUpAndInInput) error {
 		RegisteredAt: time.Now(),
 	}
 
-	return u.repo.Create(user)
+	return u.repo.Create(ctx, user)
 }
 
 // SignIn проверяет наличие пользователя в базе данных и выписывает token.
-func (u *Users) SignIn(usr domain.SighUpAndInInput) (string, error) {
+func (u *Users) SignIn(ctx context.Context, usr domain.SighUpAndInInput) (string, error) {
 	password, err := u.hasher.Hash(usr.Password)
 	if err != nil {
 		return "", err
 	}
 
-	user, err := u.repo.GetUser(usr.Login, password)
+	user, err := u.repo.GetUser(ctx, usr.Login, password)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return "", domain.ErrUserNotFound

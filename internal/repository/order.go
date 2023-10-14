@@ -1,12 +1,14 @@
 package repository
 
 import (
+	"context"
+
 	"github.com/AlexCorn999/bonus-system/internal/domain"
 )
 
 // Create добавляет пользователя в базу данных.
-func (s *Storage) AddOrder(order domain.Order) error {
-	result, err := s.db.Exec("INSERT INTO orders (order_id, status, uploaded_at, bonuses, user_id) values ($1, $2, $3, $4, $5) on conflict (order_id) do nothing",
+func (s *Storage) AddOrder(ctx context.Context, order domain.Order) error {
+	result, err := s.db.ExecContext(ctx, "INSERT INTO orders (order_id, status, uploaded_at, bonuses, user_id) values ($1, $2, $3, $4, $5) on conflict (order_id) do nothing",
 		order.OrderID, order.Status, order.UploadedAt, order.Bonuses, order.UserID)
 	if err != nil {
 		return err
@@ -19,7 +21,7 @@ func (s *Storage) AddOrder(order domain.Order) error {
 
 	if rowsAffected == 0 {
 		// проверка при возникновении конфликта.
-		userID, err := s.checkOrder(order)
+		userID, err := s.checkOrder(ctx, order)
 		if err != nil {
 			return err
 		}
@@ -35,17 +37,17 @@ func (s *Storage) AddOrder(order domain.Order) error {
 }
 
 // checkOrder проверяет на конфликт номер заказа.
-func (s *Storage) checkOrder(order domain.Order) (int64, error) {
+func (s *Storage) checkOrder(ctx context.Context, order domain.Order) (int64, error) {
 	var userID int64
-	err := s.db.QueryRow("SELECT user_id FROM orders WHERE order_id=$1", order.OrderID).
+	err := s.db.QueryRowContext(ctx, "SELECT user_id FROM orders WHERE order_id=$1", order.OrderID).
 		Scan(&userID)
 	return userID, err
 }
 
 // GetAllOrders возвращает все заказы пользователя.
-func (s *Storage) GetAllOrders(userID int64) ([]domain.Order, error) {
+func (s *Storage) GetAllOrders(ctx context.Context, userID int64) ([]domain.Order, error) {
 	var orders []domain.Order
-	rows, err := s.db.Query("SELECT order_id, status, uploaded_at, bonuses FROM orders WHERE user_id = $1 ORDER BY uploaded_at DESC", userID)
+	rows, err := s.db.QueryContext(ctx, "SELECT order_id, status, uploaded_at, bonuses FROM orders WHERE user_id = $1 ORDER BY uploaded_at DESC", userID)
 	if err != nil {
 		return nil, err
 	}

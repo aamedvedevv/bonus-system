@@ -1,12 +1,14 @@
 package service
 
 import (
+	"context"
+
 	"github.com/AlexCorn999/bonus-system/internal/domain"
 )
 
 type ScoringSystemRepository interface {
-	GetOrderStatus() (string, error)
-	UpdateOrder(order domain.ScoringSystem) error
+	GetOrderStatus(ctx context.Context) (string, error)
+	UpdateOrder(ctx context.Context, order domain.ScoringSystem) error
 }
 
 type ScoringSystem struct {
@@ -20,11 +22,11 @@ func NewScoringSystem(repo ScoringSystemRepository) *ScoringSystem {
 }
 
 // GetOrderStatus получает orderID если его статус не PROCESSED или INVALID.
-func (s *ScoringSystem) GetOrderStatus() (string, error) {
-	return s.repo.GetOrderStatus()
+func (s *ScoringSystem) GetOrderStatus(ctx context.Context) (string, error) {
+	return s.repo.GetOrderStatus(ctx)
 }
 
 // UpdateOrder обновляет данные заказа. Начисляет бонусы и меняет статус.
-func (s *ScoringSystem) UpdateOrder(order domain.ScoringSystem) error {
-	return s.repo.UpdateOrder(order)
+func (s *ScoringSystem) UpdateOrder(ctx context.Context, order domain.ScoringSystem) error {
+	return s.repo.UpdateOrder(ctx, order)
 }

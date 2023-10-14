@@ -1,6 +1,7 @@
 package transport
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -12,7 +13,7 @@ import (
 // ScoringSystem выполняет GET запрос в систему расчета баллов и обновляет статус и кол-во бонусов за заказ.
 func (s *APIServer) ScoringSystem() {
 	// получаем номер заказа из системы если его статус не PROCESSED или INVALID
-	orderID, err := s.scoringsystem.GetOrderStatus()
+	orderID, err := s.scoringsystem.GetOrderStatus(context.Background())
 	if err != nil {
 		logError("scoringSystem", err)
 		return
@@ -41,7 +42,7 @@ func (s *APIServer) ScoringSystem() {
 			return
 		}
 
-		if err := s.scoringsystem.UpdateOrder(orderScoring); err != nil {
+		if err := s.scoringsystem.UpdateOrder(context.Background(), orderScoring); err != nil {
 			logError("scoringSystem", err)
 			return
 		}
