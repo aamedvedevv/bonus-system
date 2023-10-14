@@ -1,7 +1,9 @@
 package repository
 
 import (
+	"context"
 	"database/sql"
+	"errors"
 
 	"github.com/AlexCorn999/bonus-system/internal/domain"
 )
@@ -37,7 +39,13 @@ func (s *Storage) Withdraw(withdraw domain.Withdraw) error {
 }
 
 // Withdrawals возвращает все списания бонусов пользователя.
-func (s *Storage) Withdrawals(userID int64) ([]domain.Withdraw, error) {
+func (s *Storage) Withdrawals(ctx context.Context) ([]domain.Withdraw, error) {
+
+	userID, ok := ctx.Value(domain.UserIDKeyForContext).(int64)
+	if !ok {
+		return nil, errors.New("incorrect user id")
+	}
+
 	var withdrawals []domain.Withdraw
 	rows, err := s.db.Query("SELECT order_id, bonuses, uploaded_at FROM withdrawals WHERE user_id = $1 ORDER BY uploaded_at DESC", userID)
 	if err != nil {
@@ -67,7 +75,13 @@ func (s *Storage) Withdrawals(userID int64) ([]domain.Withdraw, error) {
 }
 
 // Balance возвращает весь баланс пользователя.
-func (s *Storage) Balance(userID int64) (float32, error) {
+func (s *Storage) Balance(ctx context.Context) (float32, error) {
+
+	userID, ok := ctx.Value(domain.UserIDKeyForContext).(int64)
+	if !ok {
+		return 0, errors.New("incorrect user id")
+	}
+
 	var nullableBalance sql.NullFloat64
 	err := s.db.QueryRow("SELECT SUM(bonuses) FROM orders WHERE user_id=$1", userID).
 		Scan(&nullableBalance)
@@ -83,7 +97,13 @@ func (s *Storage) Balance(userID int64) (float32, error) {
 }
 
 // WithdrawBalance возвращает сумму списанных баллов пользователя.
-func (s *Storage) WithdrawBalance(userID int64) (float32, error) {
+func (s *Storage) WithdrawBalance(ctx context.Context) (float32, error) {
+
+	userID, ok := ctx.Value(domain.UserIDKeyForContext).(int64)
+	if !ok {
+		return 0, errors.New("incorrect user id")
+	}
+
 	var nullableBalance sql.NullFloat64
 	err := s.db.QueryRow("SELECT SUM(bonuses) FROM withdrawals WHERE user_id=$1", userID).
 		Scan(&nullableBalance)
