@@ -77,7 +77,7 @@ func (s *Storage) Balance(ctx context.Context, userID int64) (float32, error) {
 		return 0, fmt.Errorf("postgreSQL: balance %s", err)
 	}
 	if !nullableBalance.Valid {
-		return 0, fmt.Errorf("postgreSQL: balance %s", err)
+		return 0, nil
 	}
 
 	balance := float32(nullableBalance.Float64)
@@ -93,7 +93,7 @@ func (s *Storage) WithdrawBalance(ctx context.Context, userID int64) (float32, e
 		return 0, fmt.Errorf("postgreSQL: withdrawBalance %s", err)
 	}
 	if !nullableBalance.Valid {
-		return 0, fmt.Errorf("postgreSQL: withdrawBalance %s", err)
+		return 0, nil
 	}
 
 	balance := float32(nullableBalance.Float64)

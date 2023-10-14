@@ -96,6 +96,7 @@ func (b *Bonuses) Withdraw(ctx context.Context, withdraw domain.Withdraw) error 
 	} else {
 		return domain.ErrNoBonuses
 	}
+
 }
 
 // Withdrawals выводит отсортированный по дате список списаний бонусов пользователя. Не больше 10 последних записей.
