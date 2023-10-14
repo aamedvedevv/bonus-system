@@ -19,22 +19,24 @@ func (s *APIServer) OrderUploading(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := s.orders.AddOrderID(r.Context(), string(data)); err != nil {
-		if errors.Is(err, domain.ErrAlreadyUploadedByThisUser) {
+		switch {
+		case errors.Is(err, domain.ErrAlreadyUploadedByThisUser):
 			logError("orderUploading", err)
 			w.WriteHeader(http.StatusOK)
 			return
-		} else if errors.Is(err, domain.ErrAlreadyUploadedByAnotherUser) {
+		case errors.Is(err, domain.ErrAlreadyUploadedByAnotherUser):
 			logError("orderUploading", err)
 			w.WriteHeader(http.StatusConflict)
 			return
-		} else if errors.Is(err, domain.ErrIncorrectOrder) {
+		case errors.Is(err, domain.ErrIncorrectOrder):
 			logError("orderUploading", err)
 			w.WriteHeader(http.StatusUnprocessableEntity)
 			return
+		default:
+			logError("orderUploading", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
 		}
-		logError("orderUploading", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
 	}
 
 	w.WriteHeader(http.StatusAccepted)

@@ -27,27 +27,23 @@ func (s *APIServer) ScoringSystem() {
 	}
 	defer resp.Body.Close()
 
-	// анализируем статусы ответа
 	if resp.StatusCode == http.StatusOK {
 
 		data, err := io.ReadAll(resp.Body)
 		if err != nil {
 			logError("scoringSystem", err)
+			return
 		}
 
 		var orderScoring domain.ScoringSystem
 		if err := json.Unmarshal(data, &orderScoring); err != nil {
 			logError("scoringSystem", err)
+			return
 		}
 
 		if err := s.scoringsystem.UpdateOrder(orderScoring); err != nil {
 			logError("scoringSystem", err)
+			return
 		}
-		s.logger.Info("scoringSystem - successful bonus accrual")
-
-	} else if resp.StatusCode == http.StatusNoContent {
-		s.logger.Info("scoringSystem - order not registered")
-	} else {
-		s.logger.Info("scoringSystem - another error")
 	}
 }
