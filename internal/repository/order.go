@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/AlexCorn999/bonus-system/internal/domain"
 )
@@ -11,19 +12,19 @@ func (s *Storage) AddOrder(ctx context.Context, order domain.Order) error {
 	result, err := s.db.ExecContext(ctx, "INSERT INTO orders (order_id, status, uploaded_at, bonuses, user_id) values ($1, $2, $3, $4, $5) on conflict (order_id) do nothing",
 		order.OrderID, order.Status, order.UploadedAt, order.Bonuses, order.UserID)
 	if err != nil {
-		return err
+		return fmt.Errorf("postgreSQL: addOrder %s", err)
 	}
 
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
-		return err
+		return fmt.Errorf("postgreSQL: addOrder %s", err)
 	}
 
 	if rowsAffected == 0 {
 		// проверка при возникновении конфликта.
 		userID, err := s.checkOrder(ctx, order)
 		if err != nil {
-			return err
+			return fmt.Errorf("postgreSQL: addOrder %s", err)
 		}
 
 		if userID == order.UserID {
@@ -41,7 +42,10 @@ func (s *Storage) checkOrder(ctx context.Context, order domain.Order) (int64, er
 	var userID int64
 	err := s.db.QueryRowContext(ctx, "SELECT user_id FROM orders WHERE order_id=$1", order.OrderID).
 		Scan(&userID)
-	return userID, err
+	if err != nil {
+		return 0, fmt.Errorf("postgreSQL: checkOrder %s", err)
+	}
+	return userID, nil
 }
 
 // GetAllOrders возвращает все заказы пользователя.
@@ -49,7 +53,7 @@ func (s *Storage) GetAllOrders(ctx context.Context, userID int64) ([]domain.Orde
 	var orders []domain.Order
 	rows, err := s.db.QueryContext(ctx, "SELECT order_id, status, uploaded_at, bonuses FROM orders WHERE user_id = $1 ORDER BY uploaded_at DESC", userID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("postgreSQL: getAllOrders %s", err)
 	}
 	defer rows.Close()
 
@@ -57,14 +61,14 @@ func (s *Storage) GetAllOrders(ctx context.Context, userID int64) ([]domain.Orde
 		var order domain.Order
 		err := rows.Scan(&order.OrderID, &order.Status, &order.UploadedAt, &order.Bonuses)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("postgreSQL: getAllOrders %s", err)
 		}
 		orders = append(orders, order)
 	}
 
 	err = rows.Err()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("postgreSQL: getAllOrders %s", err)
 	}
 
 	if len(orders) == 0 {

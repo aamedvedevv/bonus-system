@@ -92,15 +92,13 @@ func (b *Bonuses) Withdraw(ctx context.Context, withdraw domain.Withdraw) error 
 	// проверка для проведения списания бонусов
 	sum := balanceUser - balanceWithdraws
 	if sum >= with.Bonuses {
-		b.repo.Withdraw(ctx, with)
+		return b.repo.Withdraw(ctx, with)
 	} else {
 		return domain.ErrNoBonuses
 	}
-
-	return b.repo.Withdraw(ctx, with)
 }
 
-// Withdrawals выводит отсортированный по дате список списаний бонусов пользователя.
+// Withdrawals выводит отсортированный по дате список списаний бонусов пользователя. Не больше 10 последних записей.
 func (b *Bonuses) Withdrawals(ctx context.Context) ([]domain.Withdraw, error) {
 	userID, ok := ctx.Value(domain.UserIDKeyForContext).(int64)
 	if !ok {

@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/AlexCorn999/bonus-system/internal/domain"
 )
@@ -11,11 +12,17 @@ func (s *Storage) GetOrderStatus(ctx context.Context) (string, error) {
 	var orderID string
 	err := s.db.QueryRowContext(ctx, "SELECT order_id FROM orders WHERE status NOT IN ('PROCESSED', 'INVALID') LIMIT 1").
 		Scan(&orderID)
-	return orderID, err
+	if err != nil {
+		return "", fmt.Errorf("postgreSQL: getOrderStatus %s", err)
+	}
+	return orderID, nil
 }
 
 // UpdateOrder обновляет данные заказа. Начисляет бонусы и меняет статус.
 func (s *Storage) UpdateOrder(ctx context.Context, order domain.ScoringSystem) error {
 	_, err := s.db.ExecContext(ctx, "UPDATE orders SET status=$1, bonuses=$2 WHERE order_id=$3", order.Status, order.Bonuses, order.OrderID)
-	return err
+	if err != nil {
+		return fmt.Errorf("postgreSQL: updateOrder %s", err)
+	}
+	return nil
 }
