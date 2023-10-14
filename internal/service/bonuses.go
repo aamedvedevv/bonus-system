@@ -50,7 +50,6 @@ func (b *Bonuses) Balance(ctx context.Context) (*domain.BalanceOutput, error) {
 	newBalanceUser := decimal.NewFromFloat32(balanceUser).Sub(decimal.NewFromFloat32(balanceWithdraws))
 
 	var balance domain.BalanceOutput
-	// проверить
 	balance.Bonuses = float32(newBalanceUser.InexactFloat64())
 	balance.Withdraw = balanceWithdraws
 	return &balance, nil
