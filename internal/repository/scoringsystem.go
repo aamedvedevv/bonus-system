@@ -10,7 +10,7 @@ import (
 // GetOrderStatus получает orderID если его статус не PROCESSED или INVALID.
 func (s *Storage) GetOrderStatus(ctx context.Context) ([]string, error) {
 	var orderID []string
-	rows, err := s.db.QueryContext(ctx, "SELECT order_id FROM orders WHERE status NOT IN ('PROCESSED', 'INVALID') LIMIT 15")
+	rows, err := s.Db.QueryContext(ctx, "SELECT order_id FROM orders WHERE status NOT IN ('PROCESSED', 'INVALID') LIMIT 15")
 	if err != nil {
 		return nil, fmt.Errorf("postgreSQL: getOrderStatus %s", err)
 	}
@@ -34,7 +34,7 @@ func (s *Storage) GetOrderStatus(ctx context.Context) ([]string, error) {
 
 // UpdateOrder обновляет данные заказа. Начисляет бонусы и меняет статус.
 func (s *Storage) UpdateOrder(ctx context.Context, order domain.ScoringSystem) error {
-	_, err := s.db.ExecContext(ctx, "UPDATE orders SET status=$1, bonuses=$2 WHERE order_id=$3", order.Status, order.Bonuses, order.OrderID)
+	_, err := s.Db.ExecContext(ctx, "UPDATE orders SET status=$1, bonuses=$2 WHERE order_id=$3", order.Status, order.Bonuses, order.OrderID)
 	if err != nil {
 		return fmt.Errorf("postgreSQL: updateOrder %s", err)
 	}

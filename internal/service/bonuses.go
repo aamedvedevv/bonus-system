@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/AlexCorn999/bonus-system/internal/domain"
+	"github.com/AlexCorn999/bonus-system/internal/repository"
 	"github.com/shopspring/decimal"
 )
 
@@ -18,12 +19,14 @@ type BonusesRepository interface {
 }
 
 type Bonuses struct {
-	repo BonusesRepository
+	repo    BonusesRepository
+	storage *repository.Storage
 }
 
-func NewBonuses(repo BonusesRepository) *Bonuses {
+func NewBonuses(repo BonusesRepository, storage *repository.Storage) *Bonuses {
 	return &Bonuses{
-		repo: repo,
+		repo:    repo,
+		storage: storage,
 	}
 }
 
@@ -78,6 +81,20 @@ func (b *Bonuses) Withdraw(ctx context.Context, withdraw domain.Withdraw) error 
 		UserID:     userID,
 	}
 
+	// Начало транзакции
+	tx, err := b.storage.Db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		} else {
+			err = tx.Commit()
+		}
+	}()
+
 	// узнаем баланс бонусов пользователя
 	balanceUser, err := b.repo.Balance(ctx, userID)
 	if err != nil {
@@ -93,11 +110,14 @@ func (b *Bonuses) Withdraw(ctx context.Context, withdraw domain.Withdraw) error 
 	// проверка для проведения списания бонусов
 	sum := decimal.NewFromFloat32(balanceUser).Sub(decimal.NewFromFloat32(balanceWithdraws))
 	if sum.Cmp(decimal.NewFromFloat32(with.Bonuses)) > 0 {
-		return b.repo.Withdraw(ctx, with)
+		err = b.repo.Withdraw(ctx, with)
+		if err != nil {
+			return err
+		}
 	} else {
 		return domain.ErrNoBonuses
 	}
-
+	return nil
 }
 
 // Withdrawals выводит отсортированный по дате список списаний бонусов пользователя. Не больше 10 последних записей.

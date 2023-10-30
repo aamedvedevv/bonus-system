@@ -49,7 +49,7 @@ func (s *APIServer) Start() error {
 	hasher := hash.NewSHA1Hasher("salt")
 	s.users = service.NewUsers(db, hasher, []byte("sample secret"), s.config.TokenTTL)
 	s.orders = service.NewOrders(db)
-	s.withdraw = service.NewBonuses(db)
+	s.withdraw = service.NewBonuses(db, db)
 	s.scoringsystem = service.NewScoringSystem(db)
 
 	s.logger.Info("starting api server")

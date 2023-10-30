@@ -9,7 +9,7 @@ import (
 
 // Create добавляет пользователя в базу данных.
 func (s *Storage) AddOrder(ctx context.Context, order domain.Order) error {
-	result, err := s.db.ExecContext(ctx, "INSERT INTO orders (order_id, status, uploaded_at, bonuses, user_id) values ($1, $2, $3, $4, $5) on conflict (order_id) do nothing",
+	result, err := s.Db.ExecContext(ctx, "INSERT INTO orders (order_id, status, uploaded_at, bonuses, user_id) values ($1, $2, $3, $4, $5) on conflict (order_id) do nothing",
 		order.OrderID, order.Status, order.UploadedAt, order.Bonuses, order.UserID)
 	if err != nil {
 		return fmt.Errorf("postgreSQL: addOrder %s", err)
@@ -40,7 +40,7 @@ func (s *Storage) AddOrder(ctx context.Context, order domain.Order) error {
 // checkOrder проверяет на конфликт номер заказа.
 func (s *Storage) checkOrder(ctx context.Context, order domain.Order) (int64, error) {
 	var userID int64
-	err := s.db.QueryRowContext(ctx, "SELECT user_id FROM orders WHERE order_id=$1", order.OrderID).
+	err := s.Db.QueryRowContext(ctx, "SELECT user_id FROM orders WHERE order_id=$1", order.OrderID).
 		Scan(&userID)
 	if err != nil {
 		return 0, fmt.Errorf("postgreSQL: checkOrder %s", err)
@@ -51,7 +51,7 @@ func (s *Storage) checkOrder(ctx context.Context, order domain.Order) (int64, er
 // GetAllOrders возвращает все заказы пользователя.
 func (s *Storage) GetAllOrders(ctx context.Context, userID int64) ([]domain.Order, error) {
 	var orders []domain.Order
-	rows, err := s.db.QueryContext(ctx, "SELECT order_id, status, uploaded_at, bonuses FROM orders WHERE user_id = $1 ORDER BY uploaded_at DESC", userID)
+	rows, err := s.Db.QueryContext(ctx, "SELECT order_id, status, uploaded_at, bonuses FROM orders WHERE user_id = $1 ORDER BY uploaded_at DESC", userID)
 	if err != nil {
 		return nil, fmt.Errorf("postgreSQL: getAllOrders %s", err)
 	}
