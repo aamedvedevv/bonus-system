@@ -107,7 +107,7 @@ func (b *Bonuses) Withdraw(ctx context.Context, withdraw domain.Withdraw) error 
 
 	// проверка для проведения списания бонусов
 	sum := decimal.NewFromFloat32(balanceUser).Sub(decimal.NewFromFloat32(balanceWithdraws))
-	if sum.Cmp(decimal.NewFromFloat32(with.Bonuses)) <= 0 {
+	if sum.LessThan(decimal.Zero) {
 		// если баланс в минусе
 		tx.Rollback()
 		return domain.ErrNoBonuses
