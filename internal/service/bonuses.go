@@ -97,6 +97,12 @@ func (b *Bonuses) Withdraw(ctx context.Context, withdraw domain.Withdraw) error 
 		return nil
 	}()
 
+	// сразу списываем бонусы
+	err = b.repo.Withdraw(ctx, with)
+	if err != nil {
+		return err
+	}
+
 	// узнаем баланс бонусов пользователя
 	balanceUser, err := b.repo.Balance(ctx, userID)
 	if err != nil {
@@ -112,11 +118,8 @@ func (b *Bonuses) Withdraw(ctx context.Context, withdraw domain.Withdraw) error 
 	// проверка для проведения списания бонусов
 	sum := decimal.NewFromFloat32(balanceUser).Sub(decimal.NewFromFloat32(balanceWithdraws))
 	if sum.Cmp(decimal.NewFromFloat32(with.Bonuses)) > 0 {
-		err = b.repo.Withdraw(ctx, with)
-		if err != nil {
-			return err
-		}
 	} else {
+		// если баланс в минусе
 		return domain.ErrNoBonuses
 	}
 	return nil
