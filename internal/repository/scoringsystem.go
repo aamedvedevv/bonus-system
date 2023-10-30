@@ -8,13 +8,27 @@ import (
 )
 
 // GetOrderStatus получает orderID если его статус не PROCESSED или INVALID.
-func (s *Storage) GetOrderStatus(ctx context.Context) (string, error) {
-	var orderID string
-	err := s.db.QueryRowContext(ctx, "SELECT order_id FROM orders WHERE status NOT IN ('PROCESSED', 'INVALID') LIMIT 1").
-		Scan(&orderID)
+func (s *Storage) GetOrderStatus(ctx context.Context) ([]string, error) {
+	var orderID []string
+	rows, err := s.db.QueryContext(ctx, "SELECT order_id FROM orders WHERE status NOT IN ('PROCESSED', 'INVALID') LIMIT 15")
 	if err != nil {
-		return "", fmt.Errorf("postgreSQL: getOrderStatus %s", err)
+		return nil, fmt.Errorf("postgreSQL: getOrderStatus %s", err)
 	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var id string
+		err := rows.Scan(&id)
+		if err != nil {
+			return nil, fmt.Errorf("postgreSQL: getOrderStatus %s", err)
+		}
+		orderID = append(orderID, id)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("postgreSQL: getOrderStatus %s", err)
+	}
+
 	return orderID, nil
 }
 

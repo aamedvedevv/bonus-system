@@ -7,7 +7,7 @@ import (
 )
 
 type ScoringSystemRepository interface {
-	GetOrderStatus(ctx context.Context) (string, error)
+	GetOrderStatus(ctx context.Context) ([]string, error)
 	UpdateOrder(ctx context.Context, order domain.ScoringSystem) error
 }
 
@@ -22,7 +22,7 @@ func NewScoringSystem(repo ScoringSystemRepository) *ScoringSystem {
 }
 
 // GetOrderStatus получает orderID если его статус не PROCESSED или INVALID.
-func (s *ScoringSystem) GetOrderStatus(ctx context.Context) (string, error) {
+func (s *ScoringSystem) GetOrderStatus(ctx context.Context) ([]string, error) {
 	return s.repo.GetOrderStatus(ctx)
 }
 
