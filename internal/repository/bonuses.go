@@ -10,7 +10,7 @@ import (
 
 // Withdraw добавляет списания бонусов пользователя.
 func (s *Storage) Withdraw(ctx context.Context, withdraw domain.Withdraw) error {
-	result, err := s.Db.ExecContext(ctx, "INSERT INTO withdrawals (order_id, bonuses, uploaded_at, user_id) values ($1, $2, $3, $4) on conflict (order_id) do nothing",
+	result, err := s.DB.ExecContext(ctx, "INSERT INTO withdrawals (order_id, bonuses, uploaded_at, user_id) values ($1, $2, $3, $4) on conflict (order_id) do nothing",
 		withdraw.OrderID, withdraw.Bonuses, withdraw.UploadedAt, withdraw.UserID)
 	if err != nil {
 		return fmt.Errorf("postgreSQL: withdraw %s", err)
@@ -41,7 +41,7 @@ func (s *Storage) Withdraw(ctx context.Context, withdraw domain.Withdraw) error 
 // Withdrawals возвращает все списания бонусов пользователя.
 func (s *Storage) Withdrawals(ctx context.Context, userID int64) ([]domain.Withdraw, error) {
 	var withdrawals []domain.Withdraw
-	rows, err := s.Db.QueryContext(ctx, "SELECT order_id, bonuses, uploaded_at FROM withdrawals WHERE user_id = $1 ORDER BY uploaded_at DESC", userID)
+	rows, err := s.DB.QueryContext(ctx, "SELECT order_id, bonuses, uploaded_at FROM withdrawals WHERE user_id = $1 ORDER BY uploaded_at DESC", userID)
 	if err != nil {
 		return nil, fmt.Errorf("postgreSQL: withdrawals %s", err)
 	}
@@ -71,7 +71,7 @@ func (s *Storage) Withdrawals(ctx context.Context, userID int64) ([]domain.Withd
 // Balance возвращает весь баланс пользователя.
 func (s *Storage) Balance(ctx context.Context, userID int64) (float32, error) {
 	var nullableBalance sql.NullFloat64
-	err := s.Db.QueryRowContext(ctx, "SELECT SUM(bonuses) FROM orders WHERE user_id=$1", userID).
+	err := s.DB.QueryRowContext(ctx, "SELECT SUM(bonuses) FROM orders WHERE user_id=$1", userID).
 		Scan(&nullableBalance)
 	if err != nil {
 		return 0, fmt.Errorf("postgreSQL: balance %s", err)
@@ -87,7 +87,7 @@ func (s *Storage) Balance(ctx context.Context, userID int64) (float32, error) {
 // WithdrawBalance возвращает сумму списанных баллов пользователя.
 func (s *Storage) WithdrawBalance(ctx context.Context, userID int64) (float32, error) {
 	var nullableBalance sql.NullFloat64
-	err := s.Db.QueryRowContext(ctx, "SELECT SUM(bonuses) FROM withdrawals WHERE user_id=$1", userID).
+	err := s.DB.QueryRowContext(ctx, "SELECT SUM(bonuses) FROM withdrawals WHERE user_id=$1", userID).
 		Scan(&nullableBalance)
 	if err != nil {
 		return 0, fmt.Errorf("postgreSQL: withdrawBalance %s", err)
@@ -103,7 +103,7 @@ func (s *Storage) WithdrawBalance(ctx context.Context, userID int64) (float32, e
 // heckWithdraw проверяет на конфликт списание.
 func (s *Storage) checkWithdraw(ctx context.Context, withdraw domain.Withdraw) (int64, error) {
 	var userID int64
-	err := s.Db.QueryRowContext(ctx, "SELECT user_id FROM withdrawals WHERE order_id=$1", withdraw.OrderID).
+	err := s.DB.QueryRowContext(ctx, "SELECT user_id FROM withdrawals WHERE order_id=$1", withdraw.OrderID).
 		Scan(&userID)
 	if err != nil {
 		return 0, fmt.Errorf("postgreSQL: checkWithdraw %s", err)

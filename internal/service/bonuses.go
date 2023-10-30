@@ -82,7 +82,7 @@ func (b *Bonuses) Withdraw(ctx context.Context, withdraw domain.Withdraw) error 
 	}
 
 	// Начало транзакции
-	tx, err := b.storage.Db.BeginTx(ctx, nil)
+	tx, err := b.storage.DB.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
@@ -90,8 +90,9 @@ func (b *Bonuses) Withdraw(ctx context.Context, withdraw domain.Withdraw) error 
 	defer func() {
 		if err != nil {
 			tx.Rollback()
-		} else {
-			err = tx.Commit()
+		}
+		if err := tx.Commit(); err != nil {
+			return err
 		}
 	}()
 

@@ -14,7 +14,7 @@ var (
 )
 
 type Storage struct {
-	Db *sql.DB
+	DB *sql.DB
 }
 
 // NewStorage инициализирует хранилище и применяет миграции.
@@ -30,11 +30,11 @@ func NewStorage(addr string) (*Storage, error) {
 	}
 
 	return &Storage{
-		Db: db,
+		DB: db,
 	}, nil
 }
 
 // CloseDB закрывает подключение к базе данных.
 func (s *Storage) Close() error {
-	return s.Db.Close()
+	return s.DB.Close()
 }

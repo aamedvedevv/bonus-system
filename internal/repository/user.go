@@ -9,7 +9,7 @@ import (
 
 // Create добавляет пользователя в базу данных.
 func (s *Storage) Create(ctx context.Context, user domain.User) error {
-	result, err := s.Db.ExecContext(ctx, "INSERT INTO users (login, password, registered_at) values ($1, $2, $3) on conflict (login) do nothing",
+	result, err := s.DB.ExecContext(ctx, "INSERT INTO users (login, password, registered_at) values ($1, $2, $3) on conflict (login) do nothing",
 		user.Login, user.Password, user.RegisteredAt)
 	if err != nil {
 		return fmt.Errorf("postgreSQL: create %s", err)
@@ -30,7 +30,7 @@ func (s *Storage) Create(ctx context.Context, user domain.User) error {
 // GetUser возвращает пользователя из базы данных.
 func (s *Storage) GetUser(ctx context.Context, login, password string) (domain.User, error) {
 	var user domain.User
-	err := s.Db.QueryRowContext(ctx, "SELECT id, login, password, registered_at FROM users WHERE login=$1 AND password=$2", login, password).
+	err := s.DB.QueryRowContext(ctx, "SELECT id, login, password, registered_at FROM users WHERE login=$1 AND password=$2", login, password).
 		Scan(&user.ID, &user.Login, &user.Password, &user.RegisteredAt)
 	if err != nil {
 		return domain.User{}, fmt.Errorf("postgreSQL: getUser %s", err)
