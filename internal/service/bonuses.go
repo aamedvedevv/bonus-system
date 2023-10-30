@@ -87,13 +87,14 @@ func (b *Bonuses) Withdraw(ctx context.Context, withdraw domain.Withdraw) error 
 		return err
 	}
 
-	defer func() {
+	defer func() error {
 		if err != nil {
 			tx.Rollback()
 		}
 		if err := tx.Commit(); err != nil {
 			return err
 		}
+		return nil
 	}()
 
 	// узнаем баланс бонусов пользователя
