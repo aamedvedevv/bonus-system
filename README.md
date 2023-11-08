@@ -368,4 +368,4 @@ Content-Length: 0
 
 ### SWAGGER
 
-![image](https://github.com/AlexCorn999/bonus-system/images/swagger.png)
+![image](https://github.com/AlexCorn999/bonus-system/blob/master/images/swagger.png)
