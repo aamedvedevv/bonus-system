@@ -11,7 +11,18 @@ import (
 	"github.com/AlexCorn999/bonus-system/internal/repository"
 )
 
-// SighUp отвечает за регистрацию пользователя по логину и паролю. Автоматически производит аутентификацию.
+// @Summary      SighUp
+// @Description  Отвечает за регистрацию пользователя по логину и паролю. Автоматически производит аутентификацию.
+// @Tags         auth
+// @ID 			 create-account
+// @Accept       json
+// @Produce      json
+// @Param        input body domain.SighUpAndInInput true "account info"
+// @Success      200
+// @Failure      400
+// @Failure      409
+// @Failure      500
+// @Router       /api/user/register [post]
 func (s *APIServer) SighUp(w http.ResponseWriter, r *http.Request) {
 	data, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -50,7 +61,18 @@ func (s *APIServer) SighUp(w http.ResponseWriter, r *http.Request) {
 	s.SighIn(w, r)
 }
 
-// SighIn отвечает за аутентификацию пользователя по логину и паролю. Проверяет наличие токена.
+// @Summary      SighIn
+// @Description  Отвечает за аутентификацию пользователя по логину и паролю. Проверяет наличие токена.
+// @Tags         auth
+// @ID 			 login
+// @Accept       json
+// @Produce      json
+// @Param        input body domain.SighUpAndInInput true "account info"
+// @Success      200
+// @Failure      400
+// @Failure      401
+// @Failure      500
+// @Router       /api/user/login [post]
 func (s *APIServer) SighIn(w http.ResponseWriter, r *http.Request) {
 	data, err := io.ReadAll(r.Body)
 	if err != nil {

@@ -9,7 +9,21 @@ import (
 	"github.com/AlexCorn999/bonus-system/internal/domain"
 )
 
-// OrderUploading загружает номер заказа в систему.
+// @Summary OrderUploading
+// @Description Загружает номер заказа в систему.
+// @Security ApiKeyAuth
+// @Tags orders
+// @ID add order ID
+// @Accept json
+// @Param input body string true "order ID"
+// @Success 202 "Status Accepted"
+// @Failure 200 "Status OK"
+// @Failure 400 "Bad Request"
+// @Failure 401 "Status Unauthorized"
+// @Failure 409 "Conflict"
+// @Failure 422 "Status Unprocessable Entity"
+// @Failure 500 "Internal Server Error"
+// @Router /api/user/orders [post]
 func (s *APIServer) OrderUploading(w http.ResponseWriter, r *http.Request) {
 	data, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -42,7 +56,17 @@ func (s *APIServer) OrderUploading(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusAccepted)
 }
 
-// GetAllOrders выводит отсортированный по дате список заказов пользователя.
+// @Summary GetAllOrders
+// @Description Выводит отсортированный по дате список заказов пользователя.
+// @Security ApiKeyAuth
+// @Tags orders
+// @ID get all orders
+// @Produce json
+// @Success 200 {object} []domain.Order
+// @Failure 204 "Status No Content"
+// @Failure 401 "Status Unauthorized"
+// @Failure 500 "Internal Server Error"
+// @Router /api/user/orders [get]
 func (s *APIServer) GetAllOrders(w http.ResponseWriter, r *http.Request) {
 	orders, err := s.orders.GetAllOrders(r.Context())
 	if err != nil {

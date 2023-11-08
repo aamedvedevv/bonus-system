@@ -9,7 +9,16 @@ import (
 	"github.com/AlexCorn999/bonus-system/internal/domain"
 )
 
-// Balance выводит сумму баллов лояльности и использованных за весь период регистрации баллов пользователя.
+// @Summary Balance
+// @Description Выводит сумму баллов лояльности и использованных за весь период регистрации баллов пользователя.
+// @Security ApiKeyAuth
+// @Tags balance
+// @ID balance
+// @Produce json
+// @Success 200 {object} domain.BalanceOutput
+// @Failure 401 "Status Unauthorized"
+// @Failure 500 "Internal Server Error"
+// @Router /api/user/balance [get]
 func (s *APIServer) Balance(w http.ResponseWriter, r *http.Request) {
 	balance, err := s.withdraw.Balance(r.Context())
 	if err != nil {
@@ -30,7 +39,19 @@ func (s *APIServer) Balance(w http.ResponseWriter, r *http.Request) {
 	w.Write(balanceJSON)
 }
 
-// Withdraw реализует списание бонусов пользователя в учет суммы нового заказа.
+// @Summary Withdraw
+// @Description Реализует списание бонусов пользователя в учет суммы нового заказа.
+// @Security ApiKeyAuth
+// @Tags withdraw
+// @ID withdraw
+// @Accept json
+// @Param input body domain.Withdraw true "Запрос параметров списания"
+// @Success 200 "OK"
+// @Failure 401 "Status Unauthorized"
+// @Failure 402 "Status Payment Required"
+// @Failure 422 "Status Unprocessable Entity"
+// @Failure 500 "Internal Server Error"
+// @Router /api/user/balance/withdraw [post]
 func (s *APIServer) Withdraw(w http.ResponseWriter, r *http.Request) {
 	data, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -70,7 +91,16 @@ func (s *APIServer) Withdraw(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// Withdrawals выводит отсортированный по дате список списаний бонусов пользователя.
+// @Summary Withdrawals
+// @Description Выводит отсортированный по дате список списаний бонусов пользователя.
+// @Tags withdraw
+// @Security ApiKeyAuth
+// @Produce json
+// @Success 200 {array} []domain.Withdraw
+// @Failure 204 "Status No Content"
+// @Failure 401 "Status Unauthorized"
+// @Failure 500 "Internal Server Error"
+// @Router /api/user/withdrawals [get]
 func (s *APIServer) Withdrawals(w http.ResponseWriter, r *http.Request) {
 	withdrawals, err := s.withdraw.Withdrawals(r.Context())
 	if err != nil {

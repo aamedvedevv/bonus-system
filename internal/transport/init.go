@@ -4,12 +4,14 @@ import (
 	"net/http"
 	"time"
 
+	_ "github.com/AlexCorn999/bonus-system/docs"
 	"github.com/AlexCorn999/bonus-system/internal/config"
 	"github.com/AlexCorn999/bonus-system/internal/hash"
 	"github.com/AlexCorn999/bonus-system/internal/repository"
 	"github.com/AlexCorn999/bonus-system/internal/service"
 	"github.com/go-chi/chi/v5"
 	log "github.com/sirupsen/logrus"
+	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 type APIServer struct {
@@ -80,6 +82,9 @@ func (s *APIServer) configureRouter() {
 	s.router.With(s.authMiddleware).Get("/api/user/balance", s.Balance)
 	s.router.With(s.authMiddleware).Post("/api/user/balance/withdraw", s.Withdraw)
 	s.router.With(s.authMiddleware).Get("/api/user/withdrawals", s.Withdrawals)
+	s.router.Get("/swagger/*", httpSwagger.Handler(
+		httpSwagger.URL("http://localhost:8080/swagger/doc.json"),
+	))
 }
 
 func (s *APIServer) configureLogger() error {
